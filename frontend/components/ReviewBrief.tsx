@@ -13,6 +13,10 @@ interface ReviewBriefProps {
 }
 
 export default function ReviewBrief({ data }: ReviewBriefProps) {
+  if (!data) {
+    return null
+  }
+
   const [openSection, setOpenSection] = useState<string>('change_summary')
   const [copied, setCopied] = useState(false)
 

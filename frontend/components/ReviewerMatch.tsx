@@ -12,6 +12,10 @@ interface ReviewerMatchProps {
 }
 
 export default function ReviewerMatch({ data }: ReviewerMatchProps) {
+  if (!data || !data.reviewers || data.reviewers.length === 0) {
+    return null
+  }
+
   const getInitials = (username: string) => {
     return username
       .split('_')

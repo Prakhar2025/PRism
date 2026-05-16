@@ -8,6 +8,10 @@ interface MergeReadinessProps {
 }
 
 export default function MergeReadiness({ data }: MergeReadinessProps) {
+  if (!data || !data.status) {
+    return null
+  }
+
   const statusConfig = {
     GREEN: {
       color: 'var(--green)',

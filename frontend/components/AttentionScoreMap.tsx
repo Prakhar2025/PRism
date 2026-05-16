@@ -16,6 +16,10 @@ interface AttentionScoreMapProps {
 }
 
 export default function AttentionScoreMap({ data }: AttentionScoreMapProps) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return null
+  }
+
   const [expandedFile, setExpandedFile] = useState<string | null>(null)
   const [showSkip, setShowSkip] = useState(false)
 

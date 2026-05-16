@@ -13,6 +13,10 @@ interface SmellDetectorProps {
 }
 
 export default function SmellDetector({ data }: SmellDetectorProps) {
+  if (!data || !data.smells) {
+    return null
+  }
+
   const maxSeverity = data.smells.length > 0
     ? data.smells.reduce((max, smell) => {
         const severityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 }

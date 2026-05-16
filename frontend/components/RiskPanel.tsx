@@ -18,6 +18,10 @@ interface RiskPanelProps {
 }
 
 export default function RiskPanel({ data }: RiskPanelProps) {
+  if (!data) {
+    return null
+  }
+
   const [expanded, setExpanded] = useState<string | null>(null)
 
   const dimensions = [
