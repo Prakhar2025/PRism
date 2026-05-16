@@ -1,0 +1,80 @@
+# ── Go ──────────────────────────────────────────
+backend/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# ── Python ──────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+ai/__pycache__/
+ai/*.pyc
+ai/.venv/
+ai/venv/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+
+# ── Node / Next.js ───────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+node_modules/
+.npm
+
+# ── Environment Variables ────────────────────────
+.env
+.env.local
+.env.production
+.env.production.local
+.env.development.local
+.env.test.local
+
+# ── Database ─────────────────────────────────────
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ── Logs ─────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS ───────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── IDE ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Docker ────────────────────────────────────────
+# (docker-compose.yml IS committed — only exclude volumes/data)
+postgres_data/
+
+# ── bob_reports/ is INTENTIONALLY committed ───────
