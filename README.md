@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/PRism_Wordmark_GitHub.png" alt="PRism Logo" width="600"/>
+</p>
+
 # PRism — Pull Request Intelligence Platform
 
 **AI-powered pull request analysis that makes code reviews self-explaining, risk-scored, and decision-remembered.**
@@ -269,8 +273,6 @@ Create `.env` file:
 # GitHub API (for fetching PR data)
 GITHUB_TOKEN=your_github_personal_access_token
 
-# IBM Bob
-BOB_API_KEY=your_bob_api_key
 
 # PostgreSQL
 DATABASE_URL=postgresql://prism:prism@postgres:5432/prism
