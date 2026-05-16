@@ -9,6 +9,9 @@ import attention
 import smell
 import reviewer
 import merge_readiness
+import brief
+import memory
+import output_formatter
 
 
 app = FastAPI(title="PRism AI Service", version="1.0.0")
@@ -71,7 +74,7 @@ async def health_check():
     return {"status": "ok", "service": "prism-ai"}
 
 
-@app.post("/process", response_model=PRismOutput)
+@app.post("/process")
 async def process_pr(pr_data: PRDataRequest):
     try:
         pr_data_dict = pr_data.model_dump()
@@ -86,87 +89,30 @@ async def process_pr(pr_data: PRDataRequest):
         
         reviewers = reviewer.match_reviewers(pr_data_dict)
         
-        output = format_output(
+        merge_readiness_result = merge_readiness.compute_merge_readiness(
+            pr_data_dict, risk_scores, attention_scores, smells
+        )
+        
+        review_brief = brief.generate_brief(pr_data_dict, risk_scores, attention_scores)
+        
+        decision_id = memory.store_decision(pr_data_dict, review_brief, risk_scores)
+        
+        output = output_formatter.format_output(
             pr_data_dict,
             dependency_graph,
             risk_scores,
             attention_scores,
             smells,
-            reviewers
+            reviewers,
+            merge_readiness_result,
+            review_brief,
+            decision_id
         )
         
         return output
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
-
-
-def compute_risk_placeholder(pr_data: Dict[str, Any], dependency_graph: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "overall_risk": 0.0,
-        "file_risks": {},
-        "risk_factors": []
-    }
-
-
-def compute_attention_placeholder(
-    risk_scores: Dict[str, Any],
-    dependency_graph: Dict[str, Any],
-    pr_data: Dict[str, Any]
-) -> Dict[str, Any]:
-    return {
-        "attention_distribution": {},
-        "high_attention_files": [],
-        "attention_metrics": {}
-    }
-
-
-def detect_smells_placeholder(pr_data: Dict[str, Any], attention_scores: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    return []
-
-
-def match_reviewers_placeholder(pr_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    return []
-
-
-def format_output(
-    pr_data: Dict[str, Any],
-    dependency_graph: Dict[str, Any],
-    risk_scores: Dict[str, Any],
-    attention_scores: List[Dict[str, Any]],
-    smells: Dict[str, Any],
-    reviewers: Dict[str, Any]
-) -> Dict[str, Any]:
-    metadata = pr_data.get('metadata', {})
-    
-    merge_readiness_result = merge_readiness.compute_merge_readiness(
-        pr_data, risk_scores, attention_scores, smells
-    )
-    
-    return {
-        "pr_url": metadata.get('html_url', ''),
-        "pr_number": metadata.get('number', 0),
-        "title": metadata.get('title', ''),
-        "author": metadata.get('author', ''),
-        "dependency_graph": dependency_graph,
-        "risk_scores": risk_scores,
-        "attention_scores": attention_scores,
-        "smells": smells,
-        "reviewers": reviewers,
-        "merge_readiness": merge_readiness_result,
-        "summary": {
-            "total_files_changed": len(pr_data.get('files', [])),
-            "total_commits": len(pr_data.get('commits', [])),
-            "graph_nodes": dependency_graph.get('nodes', 0),
-            "graph_edges": dependency_graph.get('edges', 0),
-            "high_risk_files": len([f for f in dependency_graph.get('changed_files', [])
-                                   if f.get('transitive_dependents', 0) > 5]),
-            "test_files": len([f for f in dependency_graph.get('changed_files', [])
-                              if f.get('is_test', False)]),
-            "smells_detected": smells.get('smells_detected', 0),
-            "merge_status": merge_readiness_result.get('status', 'UNKNOWN')
-        }
-    }
 
 
 if __name__ == "__main__":
