@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 import uvicorn
 
 import pr_parser
+import risk
 
 
 app = FastAPI(title="PRism AI Service", version="1.0.0")
@@ -73,7 +74,7 @@ async def process_pr(pr_data: PRDataRequest):
         
         dependency_graph = pr_parser.parse_pr(pr_data_dict)
         
-        risk_scores = compute_risk_placeholder(pr_data_dict, dependency_graph)
+        risk_scores = risk.compute_risk(pr_data_dict, dependency_graph)
         
         attention_scores = compute_attention_placeholder(risk_scores, dependency_graph, pr_data_dict)
         
