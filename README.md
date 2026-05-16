@@ -255,7 +255,7 @@ instead of direct SQL query.
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/prism.git
+git clone https://github.com/Prakhar2025/PRism.git
 cd prism
 
 # Start all services
@@ -272,7 +272,6 @@ Create `.env` file:
 ```bash
 # GitHub API (for fetching PR data)
 GITHUB_TOKEN=your_github_personal_access_token
-
 
 # PostgreSQL
 DATABASE_URL=postgresql://prism:prism@postgres:5432/prism
