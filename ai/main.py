@@ -6,6 +6,9 @@ import uvicorn
 import pr_parser
 import risk
 import attention
+import smell
+import reviewer
+import merge_readiness
 
 
 app = FastAPI(title="PRism AI Service", version="1.0.0")
@@ -79,9 +82,9 @@ async def process_pr(pr_data: PRDataRequest):
         
         attention_scores = attention.compute_attention(risk_scores, dependency_graph, pr_data_dict)
         
-        smells = detect_smells_placeholder(pr_data_dict, attention_scores)
+        smells = smell.detect_smells(pr_data_dict, attention_scores)
         
-        reviewers = match_reviewers_placeholder(pr_data_dict)
+        reviewers = reviewer.match_reviewers(pr_data_dict)
         
         output = format_output(
             pr_data_dict,
@@ -131,10 +134,14 @@ def format_output(
     dependency_graph: Dict[str, Any],
     risk_scores: Dict[str, Any],
     attention_scores: List[Dict[str, Any]],
-    smells: List[Dict[str, Any]],
-    reviewers: List[Dict[str, Any]]
+    smells: Dict[str, Any],
+    reviewers: Dict[str, Any]
 ) -> Dict[str, Any]:
     metadata = pr_data.get('metadata', {})
+    
+    merge_readiness_result = merge_readiness.compute_merge_readiness(
+        pr_data, risk_scores, attention_scores, smells
+    )
     
     return {
         "pr_url": metadata.get('html_url', ''),
@@ -146,15 +153,18 @@ def format_output(
         "attention_scores": attention_scores,
         "smells": smells,
         "reviewers": reviewers,
+        "merge_readiness": merge_readiness_result,
         "summary": {
             "total_files_changed": len(pr_data.get('files', [])),
             "total_commits": len(pr_data.get('commits', [])),
             "graph_nodes": dependency_graph.get('nodes', 0),
             "graph_edges": dependency_graph.get('edges', 0),
-            "high_risk_files": len([f for f in dependency_graph.get('changed_files', []) 
+            "high_risk_files": len([f for f in dependency_graph.get('changed_files', [])
                                    if f.get('transitive_dependents', 0) > 5]),
-            "test_files": len([f for f in dependency_graph.get('changed_files', []) 
+            "test_files": len([f for f in dependency_graph.get('changed_files', [])
                               if f.get('is_test', False)]),
+            "smells_detected": smells.get('smells_detected', 0),
+            "merge_status": merge_readiness_result.get('status', 'UNKNOWN')
         }
     }
 
