@@ -5,6 +5,7 @@ import uvicorn
 
 import pr_parser
 import risk
+import attention
 
 
 app = FastAPI(title="PRism AI Service", version="1.0.0")
@@ -76,7 +77,7 @@ async def process_pr(pr_data: PRDataRequest):
         
         risk_scores = risk.compute_risk(pr_data_dict, dependency_graph)
         
-        attention_scores = compute_attention_placeholder(risk_scores, dependency_graph, pr_data_dict)
+        attention_scores = attention.compute_attention(risk_scores, dependency_graph, pr_data_dict)
         
         smells = detect_smells_placeholder(pr_data_dict, attention_scores)
         
@@ -117,7 +118,7 @@ def compute_attention_placeholder(
     }
 
 
-def detect_smells_placeholder(pr_data: Dict[str, Any], attention_scores: Dict[str, Any]) -> List[Dict[str, Any]]:
+def detect_smells_placeholder(pr_data: Dict[str, Any], attention_scores: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return []
 
 
@@ -129,7 +130,7 @@ def format_output(
     pr_data: Dict[str, Any],
     dependency_graph: Dict[str, Any],
     risk_scores: Dict[str, Any],
-    attention_scores: Dict[str, Any],
+    attention_scores: List[Dict[str, Any]],
     smells: List[Dict[str, Any]],
     reviewers: List[Dict[str, Any]]
 ) -> Dict[str, Any]:
