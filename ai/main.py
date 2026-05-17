@@ -1,3 +1,7 @@
+# Load .env file FIRST — before all other imports read env vars
+from dotenv import load_dotenv
+load_dotenv()  # reads ai/.env automatically
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional

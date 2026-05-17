@@ -7,11 +7,20 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"prism/backend/github"
 )
+
+func getEnv(key, fallback string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return fallback
+}
 
 type AnalyzeRequest struct {
 	PRURL string `json:"pr_url"`
@@ -22,19 +31,31 @@ type ErrorResponse struct {
 }
 
 func main() {
-	http.HandleFunc("/analyze", corsMiddleware(handleAnalyze))
+	// Load .env file if present (ignored in production where real env vars are set)
+	_ = godotenv.Load(".env")
 
-	log.Println("Server starting on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	http.HandleFunc("/analyze", corsMiddleware(handleAnalyze))
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok"}`))
+	})
+
+	port := getEnv("PORT", "8080")
+	log.Printf("Server starting on port %s...", port)
+	log.Printf("AI Service: %s", getEnv("AI_SERVICE_URL", "http://localhost:8000"))
+	log.Printf("CORS Origin: %s", getEnv("FRONTEND_URL", "http://localhost:3000"))
+
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", frontendURL)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
@@ -116,7 +137,8 @@ func forwardToPythonService(prData github.PRData) ([]byte, error) {
 		return nil, fmt.Errorf("failed to marshal PR data: %w", err)
 	}
 
-	resp, err := http.Post("http://localhost:8000/process", "application/json", bytes.NewBuffer(jsonData))
+	aiURL := getEnv("AI_SERVICE_URL", "http://localhost:8000") + "/process"
+	resp, err := http.Post(aiURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Python service: %w", err)
 	}

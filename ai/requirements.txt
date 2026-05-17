@@ -1,11 +1,28 @@
-fastapi==0.110.0
-uvicorn==0.27.0
+# Web framework
+fastapi==0.115.0
+uvicorn==0.30.0
+
+# Data validation
+pydantic==2.7.0
+
+# HTTP client
+requests==2.32.0
+
+# Graph analysis (blast radius)
+networkx==3.3
+
+# AST parsing
 tree-sitter==0.21.3
 tree-sitter-python==0.21.0
 tree-sitter-javascript==0.21.0
 tree-sitter-go==0.21.0
 tree-sitter-java==0.21.0
-networkx==3.2.1
-requests==2.31.0
+
+# LLM — Groq (best free option: llama-3.3-70b-versatile)
+groq==0.9.0
+
+# Database — PostgreSQL (Decision Memory)
 psycopg2-binary==2.9.9
-pydantic==2.6.0
+
+# Environment variables loader
+python-dotenv==1.0.1
