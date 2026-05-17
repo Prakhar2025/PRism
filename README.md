@@ -8,6 +8,8 @@
 
 > One-line pitch: PRism makes pull requests self-explaining, risk-scored, and decision-remembered — powered by IBM Bob's full repository intelligence.
 
+**🌐 Live Demo:** [https://p-rism-zeta.vercel.app/](https://p-rism-zeta.vercel.app/)
+
 ---
 
 ## The Problem
