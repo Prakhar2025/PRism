@@ -10,9 +10,9 @@ import SmellDetector from '@/components/SmellDetector'
 import ReviewerMatch from '@/components/ReviewerMatch'
 
 const EXAMPLE_PRS = [
-  { url: 'https://github.com/vercel/next.js/pull/62368', label: 'vercel/next.js · #62368' },
-  { url: 'https://github.com/facebook/react/pull/28000', label: 'facebook/react · #28000' },
-  { url: 'https://github.com/microsoft/vscode/pull/180000', label: 'microsoft/vscode · #180000' },
+  { url: 'https://github.com/expressjs/express/pull/5761', label: 'expressjs/express · #5761' },
+  { url: 'https://github.com/vercel/next.js/pull/67350', label: 'vercel/next.js · #67350' },
+  { url: 'https://github.com/facebook/react/pull/30794', label: 'facebook/react · #30794' },
 ]
 
 const LOADING_MESSAGES = [
@@ -184,204 +184,251 @@ export default function Home() {
 
   const displayData = data || MOCK_DATA
 
-  // IDLE STATE
+  // IDLE STATE — full landing page
   if (state === 'idle' || state === 'error') {
+    const FEATURES = [
+      { icon: '🎯', title: 'Attention Score', desc: 'AS(f) = 0.40·R + 0.35·D + 0.25·C — tells you exactly which files need line-by-line review.' },
+      { icon: '🔐', title: 'Security Risk', desc: 'AST pattern matching detects JWT issues, SQL injection, eval(), auth bypass patterns.' },
+      { icon: '💥', title: 'Blast Radius', desc: 'Graph centrality shows how many services break if a changed file fails.' },
+      { icon: '🧠', title: 'Decision Memory', desc: 'Architectural decisions stored permanently. Search why any change was made, forever.' },
+      { icon: '👃', title: 'PR Smell Detection', desc: 'Flags God PRs, missing tests, Friday merges before a single reviewer opens the diff.' },
+      { icon: '👥', title: 'Reviewer Matching', desc: 'Recommends reviewers by actual commit history on changed files, not random assignment.' },
+    ]
+
     return (
       <>
-        <div className="hero-grid" />
-        <div className="hero-glow" />
-        
-        <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
-          {/* Nav */}
-          <nav style={{
-            height: '52px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 24px',
-          }}>
-            <div style={{
-              fontSize: '14px',
-              fontWeight: 700,
-              color: 'var(--brand)',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-            }}>
-              PRism
+        <div className="dot-grid" />
+        <div className="hero-orb" />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+
+          {/* ── Nav ── */}
+          <nav style={{ height: '56px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(6,8,16,0.7)', position: 'sticky', top: 0, zIndex: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PRism</div>
+              <div style={{ height: '14px', width: '1px', background: 'var(--border)' }} />
+              <div style={{ fontSize: '12px', color: 'var(--text-3)', letterSpacing: '0.06em' }}>OPEN SOURCE BETA</div>
             </div>
-            <a
-              href="https://github.com/Prakhar2025/PRism"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontSize: '13px',
-                color: 'var(--text-3)',
-                transition: 'color 150ms ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-3)'}
-            >
-              GitHub
-            </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>Free · No account required</span>
+              <a href="https://github.com/Prakhar2025/PRism" target="_blank" rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 12px', transition: 'all 150ms ease' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.color = 'var(--brand)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-2)' }}>
+                ⭐ GitHub
+              </a>
+            </div>
           </nav>
 
-          {/* Hero */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 'calc(100vh - 52px)',
-            padding: '20px',
-          }}>
-            <div style={{ maxWidth: '640px', width: '100%', textAlign: 'center' }}>
-              <h1 style={{
-                fontSize: 'var(--text-hero)',
-                fontWeight: 800,
-                lineHeight: 1.2,
-                marginBottom: '16px',
-              }}>
-                <div style={{ color: 'var(--text)' }}>PR Intelligence,</div>
-                <div className="shimmer-text">mathematically.</div>
+          {/* ── Hero ── */}
+          <section className="hero-section" style={{ display: 'flex', alignItems: 'center', minHeight: 'calc(100vh - 56px)', padding: '60px 32px', maxWidth: '1400px', margin: '0 auto', gap: '48px' }}>
+
+            {/* Left Column */}
+            <div className="hero-left" style={{ flex: '0 0 52%', maxWidth: '52%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div className="tag-pill">
+                <span className="tag-dot" />
+                Open Source · Free Forever · No signup
+              </div>
+
+              <h1 style={{ fontSize: '62px', fontWeight: 800, lineHeight: 1.1, color: 'var(--text)', marginBottom: '20px', letterSpacing: '-0.02em' }}>
+                PR Reviews,<br />
+                <span style={{ background: 'linear-gradient(135deg, var(--brand) 0%, #7eb3ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  finally intelligent.
+                </span>
               </h1>
 
-              <p style={{
-                fontSize: '16px',
-                color: 'var(--text-2)',
-                lineHeight: 1.6,
-                marginBottom: '32px',
-              }}>
-                Stop guessing which files matter. PRism computes{' '}
-                <span style={{ fontFamily: 'var(--font-mono), monospace', color: 'var(--brand)', fontSize: '14px' }}>
-                  AS(f) = 0.40·R + 0.35·D + 0.25·C
-                </span>
-                {' '}for every changed file.
+              <p style={{ fontSize: '17px', color: 'var(--text-2)', lineHeight: 1.65, maxWidth: '480px', marginBottom: '28px' }}>
+                Stop guessing which files matter. PRism computes a mathematical attention score for every changed file — so reviewers know exactly where to focus.
               </p>
 
+              <div className="formula-box">
+                AS(f) = 0.40·R(f) + 0.35·D(f) + 0.25·C(f)
+              </div>
+
               {error && (
-                <div style={{
-                  background: 'var(--red-bg)',
-                  border: '1px solid var(--red)',
-                  borderRadius: '6px',
-                  padding: '16px',
-                  marginBottom: '24px',
-                  color: 'var(--red)',
-                  fontSize: '14px',
-                  textAlign: 'left',
-                }}>
+                <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', color: 'var(--red)', fontSize: '14px', width: '100%', maxWidth: '520px' }}>
                   {error}
                 </div>
               )}
 
-              {/* Input Row */}
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                marginBottom: '16px',
-              }}>
+              <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '520px', marginBottom: '14px' }}>
                 <input
-                  type="text"
-                  value={prUrl}
-                  onChange={(e) => setPrUrl(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                  type="text" value={prUrl}
+                  onChange={e => setPrUrl(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
                   placeholder="https://github.com/owner/repo/pull/123"
                   className="input-glow"
-                  style={{
-                    flex: 1,
-                    height: '52px',
-                    background: 'var(--bg-2)',
-                    border: '1px solid var(--border-2)',
-                    borderRadius: '10px',
-                    padding: '0 16px',
-                    fontSize: '15px',
-                    color: 'var(--text)',
-                    fontFamily: 'var(--font-mono), monospace',
-                  }}
+                  style={{ flex: 1, height: '52px', background: 'rgba(11,15,26,0.8)', border: '1px solid var(--border-2)', borderRadius: '10px', padding: '0 16px', fontSize: '14px', color: 'var(--text)', fontFamily: 'var(--font-mono), monospace' }}
                 />
-                <button
-                  onClick={handleAnalyze}
-                  style={{
-                    height: '52px',
-                    padding: '0 24px',
-                    background: 'var(--brand)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    transition: 'all 150ms ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#3d7ae8'
-                    e.currentTarget.style.transform = 'translateY(-1px)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--brand)'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }}
-                >
-                  Analyze
+                <button onClick={handleAnalyze}
+                  style={{ height: '52px', padding: '0 24px', background: 'var(--brand)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 700, whiteSpace: 'nowrap', transition: 'all 150ms ease', boxShadow: '0 0 20px rgba(79,142,247,0.25)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#3d7ae8'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(79,142,247,0.4)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--brand)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(79,142,247,0.25)' }}>
+                  Analyze PR →
                 </button>
               </div>
 
-              {/* Example Chips */}
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '64px' }}>
-                {EXAMPLE_PRS.map((pr) => (
-                  <button
-                    key={pr.url}
-                    onClick={() => setPrUrl(pr.url)}
-                    style={{
-                      background: 'var(--bg-3)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '9999px',
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      color: 'var(--text-3)',
-                      transition: 'all 150ms ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--brand)'
-                      e.currentTarget.style.color = 'var(--text)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--border)'
-                      e.currentTarget.style.color = 'var(--text-3)'
-                    }}
-                  >
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '48px' }}>
+                {EXAMPLE_PRS.map(pr => (
+                  <button key={pr.url} onClick={() => setPrUrl(pr.url)}
+                    style={{ background: 'rgba(11,15,26,0.6)', border: '1px solid var(--border)', borderRadius: '9999px', padding: '4px 12px', fontSize: '11px', color: 'var(--text-3)', transition: 'all 150ms ease', fontFamily: 'var(--font-mono), monospace' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.color = 'var(--text)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-3)' }}>
                     {pr.label}
                   </button>
                 ))}
               </div>
 
-              {/* Stats */}
-              <div style={{ display: 'flex', gap: '48px', justifyContent: 'center' }}>
-                {[
-                  { number: '4M+', label: 'PRs opened daily' },
-                  { number: '2.5hrs', label: 'avg review time' },
-                  { number: '30-40%', label: 'rework from missed context' },
-                ].map((stat) => (
-                  <div key={stat.label} style={{ textAlign: 'center' }}>
-                    <div style={{
-                      fontSize: '28px',
-                      fontWeight: 700,
-                      fontFamily: 'var(--font-mono), monospace',
-                      color: 'var(--text)',
-                    }}>
-                      {stat.number}
-                    </div>
-                    <div style={{
-                      fontSize: '13px',
-                      color: 'var(--text-3)',
-                      marginTop: '4px',
-                    }}>
-                      {stat.label}
-                    </div>
+              <div style={{ display: 'flex', gap: '40px' }}>
+                {[{ n: '4M+', l: 'PRs opened daily' }, { n: '2.5hrs', l: 'avg review time' }, { n: '30–40%', l: 'rework from missed context' }].map(s => (
+                  <div key={s.l}>
+                    <div style={{ fontSize: '24px', fontWeight: 800, fontFamily: 'var(--font-mono), monospace', color: 'var(--text)' }}>{s.n}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '3px' }}>{s.l}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+
+            {/* Right Column — Animated Preview */}
+            <div className="hero-preview" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div className="preview-card" style={{ width: '100%', maxWidth: '420px' }}>
+
+                {/* Blocked Banner */}
+                <div style={{ background: 'rgba(28,10,10,0.9)', borderBottom: '1px solid rgba(248,113,113,0.2)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--critical)', flexShrink: 0 }} className="pulse-red" />
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--critical)', letterSpacing: '0.08em' }}>BLOCKED</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(248,113,113,0.7)', marginLeft: 4 }}>Security Risk CRITICAL</div>
+                </div>
+
+                {/* Attention Score Map */}
+                <div style={{ padding: '14px 16px 10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '12px' }}>ATTENTION SCORE MAP</div>
+
+                  {[
+                    { f: 'auth/middleware.go', s: '0.91', l: 'CRITICAL', c: 'var(--critical)', bc: 'var(--critical-bg)', pb: 'pb-1' },
+                    { f: 'auth/jwt.go',         s: '0.84', l: 'CRITICAL', c: 'var(--critical)', bc: 'var(--critical-bg)', pb: 'pb-2' },
+                    { f: 'services/handler.go', s: '0.52', l: 'MEDIUM',   c: 'var(--medium)',   bc: 'var(--medium-bg)',   pb: 'pb-3' },
+                  ].map((file, i) => (
+                    <div key={file.f} className={`pf pf-${i+1}`} style={{ borderLeft: `2px solid ${file.c}`, paddingLeft: '10px', marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono), monospace', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>{file.f}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-mono), monospace', color: file.c }}>{file.s}</span>
+                          <span className={`badge badge-${file.l.toLowerCase()} ${file.l === 'CRITICAL' ? 'badge-pulse' : ''}`} style={{ fontSize: '9px', padding: '1px 5px' }}>{file.l}</span>
+                        </div>
+                      </div>
+                      <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div className={`pb ${file.pb}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Risk Mini Section */}
+                <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '10px' }}>RISK INTELLIGENCE</div>
+                  {[
+                    { l: 'SECURITY', s: '0.88', pb: 'pb-s' },
+                    { l: 'BLAST RADIUS', s: '0.91', pb: 'pb-b' },
+                  ].map(r => (
+                    <div key={r.l} style={{ marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--critical)', letterSpacing: '0.06em' }}>{r.l}</span>
+                        <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono), monospace', color: 'var(--critical)' }}>{r.s}</span>
+                      </div>
+                      <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div className={`pb ${r.pb}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ padding: '8px 16px 12px', fontSize: '10px', color: 'var(--text-3)', fontFamily: 'var(--font-mono), monospace', textAlign: 'center' }}>
+                  powered by PRism — AS(f) = 0.40·R + 0.35·D + 0.25·C
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Features Bento ── */}
+          <section style={{ padding: '80px 32px', maxWidth: '1400px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', textTransform: 'uppercase', marginBottom: '12px' }}>What PRism does</div>
+              <h2 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Six layers of PR intelligence</h2>
+            </div>
+            <div className="bento-grid">
+              {FEATURES.map(f => (
+                <div key={f.title} className="bento-card">
+                  <span style={{ fontSize: '28px', display: 'block', marginBottom: '14px' }}>{f.icon}</span>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>{f.title}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6 }}>{f.desc}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── How it Works ── */}
+          <section style={{ padding: '80px 32px', maxWidth: '1000px', margin: '0 auto', borderTop: '1px solid var(--border)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '52px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', textTransform: 'uppercase', marginBottom: '12px' }}>How it works</div>
+              <h2 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Three steps to intelligent review</h2>
+            </div>
+            <div className="steps-row">
+              {[
+                { n: '01', t: 'Paste PR URL', d: 'Any public GitHub PR. No install, no signup, no configuration.' },
+                null,
+                { n: '02', t: 'PRism analyzes', d: 'Fetches diff, parses AST, builds dependency graph, computes 4 risk dimensions in parallel.' },
+                null,
+                { n: '03', t: 'Review intelligently', d: 'Get attention scores, review brief, risk panel, PR smells, and reviewer recommendations.' },
+              ].map((step, i) =>
+                step === null ? (
+                  <div key={i} className="step-arrow">→</div>
+                ) : (
+                  <div key={step.n}>
+                    <div className="step-num">{step.n}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>{step.t}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6 }}>{step.d}</div>
+                  </div>
+                )
+              )}
+            </div>
+          </section>
+
+          {/* ── Social Proof ── */}
+          <section style={{ padding: '48px 32px', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', background: 'rgba(11,15,26,0.4)' }}>
+            <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--text-3)' }}>
+                Try it with any public GitHub PR — no account needed
+              </div>
+              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+                {[
+                  { v: 'MIT', l: 'Open Source License' },
+                  { v: 'Free', l: 'No rate limits' },
+                  { v: '< 30s', l: 'Analysis time' },
+                ].map(s => (
+                  <div key={s.l} style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--brand)', fontFamily: 'var(--font-mono), monospace' }}>{s.v}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '2px' }}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Footer ── */}
+          <footer style={{ padding: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1400px', margin: '0 auto' }}>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PRism</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>
+              MIT License · Built for engineers who care about code quality
+            </div>
+            <a href="https://github.com/Prakhar2025/PRism" target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: '13px', color: 'var(--text-3)', transition: 'color 150ms ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
+              View on GitHub →
+            </a>
+          </footer>
+
         </div>
       </>
     )

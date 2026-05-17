@@ -16,10 +16,14 @@ interface AttentionScoreMapProps {
 }
 
 export default function AttentionScoreMap({ data }: AttentionScoreMapProps) {
-  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set())
-  const [showSkip, setShowSkip] = useState(false)
-
   if (!data) return null
+
+  const nonSkipFiles = data.filter((f) => f.label !== 'SKIP')
+  // If ALL files are SKIP-level, show them all — otherwise the panel looks empty
+  const [showSkip, setShowSkip] = useState(nonSkipFiles.length === 0)
+  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set())
+
+  const filteredData = showSkip ? data : nonSkipFiles
 
   const toggleFile = (filename: string) => {
     const newExpanded = new Set(expandedFiles)
@@ -33,13 +37,11 @@ export default function AttentionScoreMap({ data }: AttentionScoreMapProps) {
 
   const labelConfig = {
     CRITICAL: { color: 'var(--red)', bg: 'var(--red-bg)', border: 'var(--red)' },
-    HIGH: { color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange)' },
+    HIGH: { color: 'var(--high)', bg: 'var(--high-bg)', border: 'var(--high)' },
     MEDIUM: { color: 'var(--yellow)', bg: 'var(--yellow-bg)', border: 'var(--yellow)' },
-    LOW: { color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue)' },
+    LOW: { color: 'var(--brand)', bg: 'var(--low-bg)', border: 'var(--brand)' },
     SKIP: { color: 'var(--text-3)', bg: 'var(--bg-3)', border: 'var(--border)' },
   }
-
-  const filteredData = showSkip ? data : data.filter((f) => f.label !== 'SKIP')
 
   return (
     <div className="card">

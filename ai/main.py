@@ -1,6 +1,12 @@
 # Load .env file FIRST — before all other imports read env vars
 from dotenv import load_dotenv
-load_dotenv()  # reads ai/.env automatically
+import os
+
+# Load backend/.env first (lower priority) then ai/.env (higher priority, wins on conflict)
+_ai_dir = os.path.dirname(os.path.abspath(__file__))
+_backend_env = os.path.join(_ai_dir, '..', 'backend', '.env')
+load_dotenv(_backend_env, override=False)   # backend vars (GITHUB_TOKEN etc)
+load_dotenv(override=True)                  # ai/.env wins on any conflict
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel

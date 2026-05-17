@@ -138,14 +138,13 @@ export default function MergeReadiness({ data }: MergeReadinessProps) {
             {data.passing.map((item, i) => (
               <div
                 key={i}
-                className="badge-skip"
                 style={{
-                  background: 'var(--bg-3)',
-                  border: '1px solid var(--border)',
+                  background: 'var(--green-bg)',
+                  border: '1px solid rgba(52,211,153,0.25)',
                   borderRadius: '6px',
                   padding: '6px 12px',
                   fontSize: '13px',
-                  color: 'var(--text-3)',
+                  color: 'var(--green)',
                   fontFamily: 'Inter, system-ui, sans-serif',
                 }}
               >

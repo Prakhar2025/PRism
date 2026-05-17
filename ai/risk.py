@@ -1,6 +1,4 @@
 import re
-import json
-import requests
 from typing import Dict, List, Any, Tuple, Optional
 
 
@@ -386,63 +384,73 @@ def compute_dependency_risk(pr_data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def compute_architectural_risk(pr_data: Dict[str, Any], dependency_graph: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Heuristic architectural risk — no LLM needed.
+    Detects cross-domain changes, circular imports, config changes, and large PRs.
+    """
     changed_files = dependency_graph.get('changed_files', [])
-    
-    filenames = [f['filename'] for f in changed_files]
+    filenames = [f.get('filename', '') for f in changed_files]
     domains = list(set(f.get('domain', 'general') for f in changed_files))
-    
-    diff = pr_data.get('diff', '')
-    diff_excerpt = diff[:500] if diff else "No diff available"
-    
-    prompt = f"""Analyze this PR for architectural consistency.
-Files changed: {', '.join(filenames[:10])}
-Domains: {', '.join(domains)}
-Diff excerpt: {diff_excerpt}
+    files = pr_data.get('files', [])
 
-Does this PR: introduce inconsistent patterns, create circular dependencies, violate module boundaries, bypass data access layers?
+    score = 0.0
+    issues = []
 
-Respond in JSON only: {{"score":0.0-1.0,"issues":["..."],"explanation":"..."}}"""
-    
-    try:
-        response = requests.post(
-            'http://localhost:11434/api/generate',
-            json={
-                'model': 'qwen2.5-coder:7b',
-                'prompt': prompt,
-                'stream': False
-            },
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            response_text = data.get('response', '')
-            
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-            if json_match:
-                result = json.loads(json_match.group(0))
-                
-                score = float(result.get('score', 0.3))
-                score = max(0.0, min(1.0, score))
-                
-                issues = result.get('issues', [])
-                explanation = result.get('explanation', 'Architectural analysis completed.')
-                
-                return {
-                    "score": round(score, 2),
-                    "label": get_label(score),
-                    "issues": issues,
-                    "explanation": explanation
-                }
-    
-    except Exception:
-        pass
-    
+    # Cross-domain changes (highest signal)
+    num_domains = len(domains)
+    if num_domains >= 4:
+        score += 0.40
+        issues.append(f"Cross-domain change spans {num_domains} domains — high coupling risk")
+    elif num_domains >= 2:
+        score += 0.20
+        issues.append(f"Changes span {num_domains} domains — verify interface contracts")
+
+    # Config / infra files changed
+    config_patterns = ['config', 'settings', 'env', 'docker', 'compose', 'k8s', 'terraform', 'helm', 'yaml', 'toml']
+    config_files = [f for f in filenames if any(p in f.lower() for p in config_patterns)]
+    if config_files:
+        score += 0.20
+        issues.append(f"Config/infra files changed: {', '.join(config_files[:3])}")
+
+    # Migration files
+    if any('migration' in f.lower() or 'schema' in f.lower() for f in filenames):
+        score += 0.25
+        issues.append("Database schema or migration file changed — irreversible risk")
+
+    # Large PR (>20 production files)
+    prod_files = [f for f in files if not any(x in f.get('filename', '').lower()
+                  for x in ['test', 'spec', 'mock', '.md', 'fixture'])]
+    if len(prod_files) > 20:
+        score += 0.20
+        issues.append(f"Large PR — {len(prod_files)} production files changed, harder to review safely")
+    elif len(prod_files) > 10:
+        score += 0.10
+        issues.append(f"Medium-sized PR — {len(prod_files)} production files changed")
+
+    # API / interface changes
+    api_patterns = ['api', 'route', 'endpoint', 'controller', 'handler', 'proto', 'graphql']
+    api_files = [f for f in filenames if any(p in f.lower() for p in api_patterns)]
+    if api_files:
+        score += 0.15
+        issues.append(f"Public API/route changes detected — check backward compatibility")
+
+    score = min(1.0, round(score, 2))
+    label = get_label(score)
+
+    if not issues:
+        explanation = "No significant architectural concerns detected. Changes appear well-scoped."
+    elif score >= 0.6:
+        explanation = f"High architectural risk: {issues[0]}"
+    elif score >= 0.3:
+        explanation = f"Moderate architectural concern: {issues[0]}"
+    else:
+        explanation = f"Low architectural risk: {issues[0]}"
+
     return {
-        "score": 0.3,
-        "label": "LOW",
-        "issues": [],
-        "explanation": "Ollama unavailable — manual architectural review recommended."
+        "score": score,
+        "label": label,
+        "issues": issues,
+        "explanation": explanation
     }
 
 

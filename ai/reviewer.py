@@ -1,7 +1,10 @@
+import os
 import requests
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Any
 from collections import defaultdict
+
+_GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 
 
 def match_reviewers(pr_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -80,14 +83,17 @@ def match_reviewers(pr_data: Dict[str, Any]) -> Dict[str, Any]:
     for username, data in sorted_candidates[:3]:
         primary_file = data['files'][0] if data['files'] else 'unknown'
         days = data['last_activity_days']
-        
+        day_text = f"{days}d ago" if days < 365 else f"{days // 365}y ago"
+        files_list = list(dict.fromkeys(data['files']))  # dedupe, preserve order
+        files_str = ', '.join(files_list[:2])
+
         reviewers.append({
             "username": username,
             "score": data['score'],
-            "reason": f"Committed to {primary_file} recently (last {days} days)",
+            "reason": f"Committed to {files_str} recently (last {day_text})",
             "last_activity_days": days
         })
-    
+
     return {"reviewers": reviewers}
 
 
@@ -129,9 +135,9 @@ def fetch_file_contributors(owner: str, repo: str, filepath: str) -> List[Dict[s
             'path': filepath,
             'per_page': 20
         }
-        headers = {
-            'User-Agent': 'PRism/1.0'
-        }
+        headers = {'User-Agent': 'PRism/1.0'}
+        if _GITHUB_TOKEN:
+            headers['Authorization'] = f'token {_GITHUB_TOKEN}'
         
         response = requests.get(url, params=params, headers=headers, timeout=10)
         

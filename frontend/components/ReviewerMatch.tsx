@@ -33,12 +33,20 @@ export default function ReviewerMatch({ data }: ReviewerMatchProps) {
     return colors[Math.abs(hash) % colors.length]
   }
 
-  // Get initials from username
+  // Normalize score to 0-100% relative to highest reviewer score
+  const maxScore = Math.max(...data.reviewers.map(r => r.score), 1)
+
+  const formatActivity = (days: number) => {
+    if (days === 0) return 'Active today'
+    if (days === 1) return 'Active yesterday'
+    if (days < 30) return `Active ${days}d ago`
+    if (days < 365) return `Active ${Math.floor(days / 30)}mo ago`
+    return `Active ${Math.floor(days / 365)}y ago`
+  }
+
   const getInitials = (username: string) => {
-    const parts = username.split('_')
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase()
-    }
+    const parts = username.split(/[_\-.]/).filter(Boolean)
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
     return username.slice(0, 2).toUpperCase()
   }
 
@@ -113,7 +121,7 @@ export default function ReviewerMatch({ data }: ReviewerMatchProps) {
                       color: 'var(--text-3)',
                     }}
                   >
-                    Active {reviewer.last_activity_days}d ago
+                    {formatActivity(reviewer.last_activity_days)}
                   </div>
                 </div>
 
@@ -145,7 +153,7 @@ export default function ReviewerMatch({ data }: ReviewerMatchProps) {
                   style={{
                     height: '100%',
                     background: avatarColor,
-                    width: `${(reviewer.score / 10) * 100}%`,
+                    width: `${Math.min(100, (reviewer.score / maxScore) * 100)}%`,
                   }}
                 />
               </div>

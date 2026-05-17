@@ -10,44 +10,35 @@ try:
 except ImportError:
     PSYCOPG2_AVAILABLE = False
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Neon (and all serverless PostgreSQL) closes idle connections.
+# Fix: NEVER hold a persistent connection. Connect fresh per operation.
+_DATABASE_URL = os.environ.get('DATABASE_URL', '')
 _db_available = False
-_connection = None
 
 
-def _init_connection():
-    """Initialize database connection on module import."""
-    global _db_available, _connection
-    
+def _get_connection():
+    """Open a fresh connection. Caller must close it."""
+    return psycopg2.connect(_DATABASE_URL)
+
+
+def _init():
+    """Test the connection on startup and create tables."""
+    global _db_available
+
     if not PSYCOPG2_AVAILABLE:
-        logger.warning("psycopg2 not installed - decision memory disabled")
+        logger.warning("psycopg2 not installed — decision memory disabled")
         return
-    
-    database_url = os.environ.get(
-        'DATABASE_URL',
-        'postgresql://prism:prism@localhost:5432/prism'
-    )
-    
-    try:
-        _connection = psycopg2.connect(database_url)
-        _create_tables()
-        _db_available = True
-        logger.info("Decision memory database connected")
-    except Exception as e:
-        logger.warning(f"Decision memory unavailable: {e}")
-        _db_available = False
 
-
-def _create_tables():
-    """Create decisions table if it doesn't exist."""
-    if not _connection:
+    if not _DATABASE_URL or 'your_neon' in _DATABASE_URL:
+        logger.info("DATABASE_URL not set — decision memory disabled")
         return
-    
+
     try:
-        with _connection.cursor() as cursor:
-            cursor.execute("""
+        conn = _get_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
                 CREATE TABLE IF NOT EXISTS decisions (
                     id SERIAL PRIMARY KEY,
                     pr_url TEXT NOT NULL,
@@ -62,16 +53,16 @@ def _create_tables():
                     created_at TIMESTAMP DEFAULT NOW()
                 )
             """)
-            
-            cursor.execute("""
-                CREATE INDEX IF NOT EXISTS idx_decisions_repo 
-                ON decisions(repo)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_decisions_repo ON decisions(repo)
             """)
-            
-            _connection.commit()
+            conn.commit()
+        conn.close()
+        _db_available = True
+        logger.info("Decision memory database connected")
     except Exception as e:
-        logger.error(f"Failed to create tables: {e}")
-        _connection.rollback()
+        logger.warning(f"Decision memory unavailable: {e}")
+        _db_available = False
 
 
 def store_decision(
@@ -79,41 +70,38 @@ def store_decision(
     brief: Dict[str, str],
     risk_scores: Dict[str, Any]
 ) -> Optional[int]:
-    """
-    Store a PR decision in the database.
-    
-    Returns decision ID if successful, None otherwise.
-    """
-    if not _db_available or not _connection:
+    """Store a PR decision. Opens and closes its own connection."""
+    if not _db_available:
         logger.warning("Decision memory unavailable - skipping storage")
         return None
-    
+
+    conn = None
     try:
         metadata = pr_data.get('metadata', {})
         pr_url = metadata.get('html_url', '')
         pr_title = metadata.get('title', '')
         pr_number = metadata.get('number', 0)
-        
-        repo = extract_repo_from_url(pr_url)
-        
+        repo = _extract_repo(pr_url)
+
         files = pr_data.get('files', [])
         affected_files = [f.get('filename', '') for f in files]
-        
+
         decision_summary = brief.get('change_summary', '')
         reasoning = brief.get('focus_areas', '')
         tradeoffs = brief.get('tradeoffs_made', '')
-        
+
         risk_accepted = {
             'security': risk_scores.get('security', {}),
             'blast_radius': risk_scores.get('blast_radius', {}),
             'dependency': risk_scores.get('dependency', {}),
-            'architectural': risk_scores.get('architectural', {})
+            'architectural': risk_scores.get('architectural', {}),
         }
-        
-        with _connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO decisions 
-                (pr_url, repo, pr_number, pr_title, decision_summary, 
+
+        conn = _get_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO decisions
+                (pr_url, repo, pr_number, pr_title, decision_summary,
                  reasoning, tradeoffs, affected_files, risk_accepted)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
@@ -121,51 +109,46 @@ def store_decision(
                 pr_url, repo, pr_number, pr_title, decision_summary,
                 reasoning, tradeoffs, affected_files, Json(risk_accepted)
             ))
-            
-            result = cursor.fetchone()
-            if result:
-                decision_id = result[0]
-            else:
-                return None
-            
-            _connection.commit()
-            
-            logger.info(f"Stored decision {decision_id} for PR {pr_number}")
-            return decision_id
-    
+            result = cur.fetchone()
+            decision_id = result[0] if result else None
+            conn.commit()
+
+        logger.info(f"Stored decision {decision_id} for PR {pr_number}")
+        return decision_id
+
     except Exception as e:
         logger.error(f"Failed to store decision: {e}")
-        if _connection:
-            _connection.rollback()
         return None
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
 def search_decisions(repo: str, query: str, limit: int = 5) -> List[Dict[str, Any]]:
-    """
-    Search for past decisions in a repository.
-    
-    Returns list of matching decisions.
-    """
-    if not _db_available or not _connection:
+    """Search past decisions. Opens and closes its own connection."""
+    if not _db_available:
         return []
-    
+
+    conn = None
     try:
-        with _connection.cursor() as cursor:
-            search_pattern = f'%{query}%'
-            
-            cursor.execute("""
+        pattern = f'%{query}%'
+        conn = _get_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
                 SELECT id, pr_url, pr_number, pr_title, decision_summary,
-                       reasoning, tradeoffs, affected_files, risk_accepted,
-                       created_at
+                       reasoning, tradeoffs, affected_files, risk_accepted, created_at
                 FROM decisions
-                WHERE repo = %s 
+                WHERE repo = %s
                   AND (decision_summary ILIKE %s OR reasoning ILIKE %s)
                 ORDER BY created_at DESC
                 LIMIT %s
-            """, (repo, search_pattern, search_pattern, limit))
-            
+            """, (repo, pattern, pattern, limit))
+
             results = []
-            for row in cursor.fetchall():
+            for row in cur.fetchall():
                 results.append({
                     'id': row[0],
                     'pr_url': row[1],
@@ -176,18 +159,22 @@ def search_decisions(repo: str, query: str, limit: int = 5) -> List[Dict[str, An
                     'tradeoffs': row[6],
                     'affected_files': row[7],
                     'risk_accepted': row[8],
-                    'created_at': row[9].isoformat() if row[9] else None
+                    'created_at': row[9].isoformat() if row[9] else None,
                 })
-            
-            return results
-    
+        return results
+
     except Exception as e:
         logger.error(f"Failed to search decisions: {e}")
         return []
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
-def extract_repo_from_url(pr_url: str) -> str:
-    """Extract repo name from PR URL."""
+def _extract_repo(pr_url: str) -> str:
     if 'github.com' in pr_url:
         parts = pr_url.split('/')
         if len(parts) >= 5:
@@ -195,6 +182,6 @@ def extract_repo_from_url(pr_url: str) -> str:
     return 'unknown'
 
 
-_init_connection()
+_init()
 
 # Made with Bob

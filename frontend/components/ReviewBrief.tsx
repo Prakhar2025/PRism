@@ -14,7 +14,7 @@ interface ReviewBriefProps {
 
 export default function ReviewBrief({ data }: ReviewBriefProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['change_summary', 'focus_areas'])
+    new Set(['change_summary', 'focus_areas', 'tradeoffs_made', 'what_to_skip', 'open_questions'])
   )
 
   if (!data) return null
@@ -114,7 +114,7 @@ export default function ReviewBrief({ data }: ReviewBriefProps) {
 
       {/* Sections */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-        {sections.map((section) => {
+        {sections.filter(s => s.content && String(s.content).trim()).map((section) => {
           const isExpanded = expandedSections.has(section.key)
 
           return (
