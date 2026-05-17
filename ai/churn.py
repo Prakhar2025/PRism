@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
 
 
@@ -20,7 +20,7 @@ def compute_churn(pr_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     
     bug_commits = 0
     commits_90d = 0
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     ninety_days_ago = now - timedelta(days=90)
     
     for commit in commits:

@@ -2,6 +2,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import uvicorn
+import traceback
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 import pr_parser
 import risk
@@ -112,6 +117,8 @@ async def process_pr(pr_data: PRDataRequest):
         return output
     
     except Exception as e:
+        logger.error(f"PIPELINE ERROR: {str(e)}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
 

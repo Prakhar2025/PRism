@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Any
 from collections import defaultdict
 
@@ -140,7 +140,7 @@ def fetch_file_contributors(owner: str, repo: str, filepath: str) -> List[Dict[s
         
         commits = response.json()
         contributors = []
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         for commit in commits:
             author_info = commit.get('author')
