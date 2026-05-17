@@ -16,148 +16,236 @@ interface AttentionScoreMapProps {
 }
 
 export default function AttentionScoreMap({ data }: AttentionScoreMapProps) {
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    return null
-  }
-
-  const [expandedFile, setExpandedFile] = useState<string | null>(null)
+  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set())
   const [showSkip, setShowSkip] = useState(false)
 
-  const skipFiles = data.filter((f) => f.label === 'SKIP')
-  const visibleFiles = showSkip ? data : data.filter((f) => f.label !== 'SKIP')
+  if (!data) return null
 
-  const getBorderColor = (label: string) => {
-    const colors = {
-      CRITICAL: 'var(--critical)',
-      HIGH: 'var(--high)',
-      MEDIUM: 'var(--medium)',
-      LOW: 'var(--low)',
-      SKIP: 'var(--skip)',
+  const toggleFile = (filename: string) => {
+    const newExpanded = new Set(expandedFiles)
+    if (newExpanded.has(filename)) {
+      newExpanded.delete(filename)
+    } else {
+      newExpanded.add(filename)
     }
-    return colors[label as keyof typeof colors] || 'var(--border)'
+    setExpandedFiles(newExpanded)
   }
 
-  const truncatePath = (path: string) => {
-    const parts = path.split('/')
-    if (parts.length > 2) {
-      return '.../' + parts.slice(-2).join('/')
-    }
-    return path
+  const labelConfig = {
+    CRITICAL: { color: 'var(--red)', bg: 'var(--red-bg)', border: 'var(--red)' },
+    HIGH: { color: 'var(--orange)', bg: 'var(--orange-bg)', border: 'var(--orange)' },
+    MEDIUM: { color: 'var(--yellow)', bg: 'var(--yellow-bg)', border: 'var(--yellow)' },
+    LOW: { color: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue)' },
+    SKIP: { color: 'var(--text-3)', bg: 'var(--bg-3)', border: 'var(--border)' },
   }
+
+  const filteredData = showSkip ? data : data.filter((f) => f.label !== 'SKIP')
 
   return (
     <div className="card">
-      <h3
+      {/* Header */}
+      <div
         style={{
-          fontSize: '13px',
-          fontWeight: 600,
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           marginBottom: '16px',
         }}
       >
-        Attention Scores
-      </h3>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        {visibleFiles.map((file) => (
-          <div key={file.filename}>
-            <div
-              onClick={() =>
-                setExpandedFile(expandedFile === file.filename ? null : file.filename)
-              }
-              style={{
-                height: '48px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0 16px',
-                borderLeft: `3px solid ${getBorderColor(file.label)}`,
-                borderRadius: '0 var(--radius) var(--radius) 0',
-                background: expandedFile === file.filename ? 'var(--surface-2)' : 'transparent',
-                cursor: 'pointer',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                if (expandedFile !== file.filename) {
-                  e.currentTarget.style.background = 'var(--surface-2)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (expandedFile !== file.filename) {
-                  e.currentTarget.style.background = 'transparent'
-                }
-              }}
-            >
-              <span
-                className="mono"
-                style={{
-                  fontSize: '13px',
-                  color: 'var(--text)',
-                  maxWidth: '45ch',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-                title={file.filename}
-              >
-                {truncatePath(file.filename)}
-              </span>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span className="mono" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  {file.score.toFixed(2)} ± {file.interval.toFixed(2)}
-                </span>
-                <span className={`badge-${file.label.toLowerCase()}`}>{file.label}</span>
-              </div>
-            </div>
-
-            {expandedFile === file.filename && (
-              <div
-                style={{
-                  padding: '12px 16px 12px 28px',
-                  background: 'var(--surface-2)',
-                  borderRadius: '0 0 var(--radius) var(--radius)',
-                  marginBottom: '4px',
-                }}
-              >
-                {file.reasons.map((reason, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--text-muted)',
-                      marginBottom: i < file.reasons.length - 1 ? '4px' : 0,
-                    }}
-                  >
-                    • {reason}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {skipFiles.length > 0 && (
+        <div className="section-label">ATTENTION SCORE MAP</div>
         <button
           onClick={() => setShowSkip(!showSkip)}
           style={{
-            marginTop: '12px',
-            width: '100%',
-            padding: '8px',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '13px',
-            cursor: 'pointer',
-            textAlign: 'left',
+            background: 'none',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            padding: '4px 10px',
+            fontSize: '12px',
+            color: 'var(--text-3)',
+            transition: 'all 150ms ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border-2)'
+            e.currentTarget.style.color = 'var(--text)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.color = 'var(--text-3)'
           }}
         >
-          {showSkip ? '↑' : '↓'} {skipFiles.length} files safe to skip
+          {showSkip ? 'Hide' : 'Show'} SKIP files
         </button>
-      )}
+      </div>
+
+      {/* File List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+        {filteredData.map((file) => {
+          const config = labelConfig[file.label]
+          const isExpanded = expandedFiles.has(file.filename)
+
+          return (
+            <div key={file.filename}>
+              {/* File Row */}
+              <button
+                onClick={() => toggleFile(file.filename)}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-2)',
+                  border: 'none',
+                  borderLeft: `3px solid ${config.border}`,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  transition: 'background 150ms ease',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-2)'
+                }}
+              >
+                {/* Left: Filename */}
+                <div
+                  style={{
+                    flex: 1,
+                    fontSize: '13px',
+                    fontFamily: 'var(--font-mono), monospace',
+                    color: 'var(--text)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {file.filename}
+                </div>
+
+                {/* Right: Score + Label */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-mono), monospace',
+                      color: config.color,
+                    }}
+                  >
+                    {file.score.toFixed(2)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: config.color,
+                      background: config.bg,
+                      border: `1px solid ${config.border}`,
+                      borderRadius: '4px',
+                      padding: '2px 6px',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {file.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: 'var(--text-3)',
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 200ms ease',
+                    }}
+                  >
+                    ▼
+                  </div>
+                </div>
+              </button>
+
+              {/* Expanded Details */}
+              {isExpanded && (
+                <div
+                  className="slide-down"
+                  style={{
+                    background: 'var(--bg-3)',
+                    borderLeft: `3px solid ${config.border}`,
+                    padding: '14px 14px 14px 20px',
+                  }}
+                >
+                  {/* Confidence Interval */}
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: 'var(--text-3)',
+                      marginBottom: '10px',
+                      fontFamily: 'var(--font-mono), monospace',
+                    }}
+                  >
+                    95% CI: [{(file.score - file.interval).toFixed(2)}, {(file.score + file.interval).toFixed(2)}]
+                  </div>
+
+                  {/* Reasons */}
+                  <div style={{ marginBottom: '10px' }}>
+                    {file.reasons.map((reason, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          fontSize: '13px',
+                          color: 'var(--text-2)',
+                          marginBottom: '6px',
+                          paddingLeft: '12px',
+                          position: 'relative',
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            color: config.color,
+                          }}
+                        >
+                          •
+                        </span>
+                        {reason}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Reviewer Action */}
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: 'var(--text)',
+                      fontWeight: 600,
+                      background: 'var(--bg-2)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                    }}
+                  >
+                    → {file.reviewer_action}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Summary */}
+      <div
+        style={{
+          marginTop: '16px',
+          padding: '12px',
+          background: 'var(--bg-2)',
+          borderRadius: '6px',
+          fontSize: '12px',
+          color: 'var(--text-3)',
+          fontFamily: 'var(--font-mono), monospace',
+        }}
+      >
+        AS(f) = 0.40·R(f) + 0.35·D(f) + 0.25·C(f)
+      </div>
     </div>
   )
 }

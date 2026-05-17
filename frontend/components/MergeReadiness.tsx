@@ -1,3 +1,5 @@
+'use client'
+
 interface MergeReadinessProps {
   data: {
     status: 'GREEN' | 'YELLOW' | 'RED'
@@ -8,25 +10,26 @@ interface MergeReadinessProps {
 }
 
 export default function MergeReadiness({ data }: MergeReadinessProps) {
-  if (!data || !data.status) {
-    return null
-  }
+  if (!data) return null
 
   const statusConfig = {
     GREEN: {
-      color: 'var(--green)',
       bg: 'var(--green-bg)',
-      text: 'Ready to Merge',
+      border: 'var(--green)',
+      text: 'var(--green)',
+      label: 'READY TO MERGE',
     },
     YELLOW: {
-      color: 'var(--yellow)',
       bg: 'var(--yellow-bg)',
-      text: 'Merge with Caution',
+      border: 'var(--yellow)',
+      text: 'var(--yellow)',
+      label: 'MERGE WITH CAUTION',
     },
     RED: {
-      color: 'var(--red)',
       bg: 'var(--red-bg)',
-      text: 'Do Not Merge',
+      border: 'var(--red)',
+      text: 'var(--red)',
+      label: 'BLOCKED',
     },
   }
 
@@ -35,49 +38,123 @@ export default function MergeReadiness({ data }: MergeReadinessProps) {
   return (
     <div
       style={{
-        height: '56px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 20px',
-        background: `${config.bg}80`,
-        borderBottom: `2px solid ${config.color}`,
-        borderRadius: 'var(--radius)',
+        background: config.bg,
+        borderTop: `3px solid ${config.border}`,
+        borderBottom: `1px solid ${config.border}`,
+        padding: '20px 24px',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* Pulse Animation */}
+      {data.status === 'RED' && (
         <div
+          className="pulse-ring"
           style={{
-            width: '16px',
-            height: '16px',
+            position: 'absolute',
+            top: '50%',
+            left: '24px',
+            transform: 'translateY(-50%)',
+            width: '12px',
+            height: '12px',
             borderRadius: '50%',
-            background: config.color,
+            background: config.border,
           }}
         />
-        <span style={{ fontSize: '15px', fontWeight: 600, color: config.color }}>
-          {config.text}
-        </span>
-      </div>
-
-      {data.blocking.length > 0 && (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {data.blocking.slice(0, 3).map((issue, i) => (
-            <div
-              key={i}
-              style={{
-                background: 'var(--critical-bg)',
-                border: '1px solid var(--critical)',
-                color: 'var(--critical)',
-                fontSize: '12px',
-                padding: '4px 10px',
-                borderRadius: '4px',
-              }}
-            >
-              {issue}
-            </div>
-          ))}
-        </div>
       )}
+
+      <div
+        style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '32px',
+        }}
+      >
+        {/* Status Label */}
+        <div
+          style={{
+            fontSize: '13px',
+            fontWeight: 700,
+            color: config.text,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            minWidth: '160px',
+          }}
+        >
+          {config.label}
+        </div>
+
+        {/* Blocking Items */}
+        {data.blocking.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1 }}>
+            {data.blocking.map((item, i) => (
+              <div
+                key={i}
+                className="badge-critical"
+                style={{
+                  background: 'var(--red-bg)',
+                  border: '1px solid var(--red)',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  color: 'var(--red)',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                }}
+              >
+                🚫 {item}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Warning Items */}
+        {data.warnings.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1 }}>
+            {data.warnings.map((item, i) => (
+              <div
+                key={i}
+                className="badge-high"
+                style={{
+                  background: 'var(--yellow-bg)',
+                  border: '1px solid var(--yellow)',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  color: 'var(--yellow)',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                }}
+              >
+                ⚠️ {item}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Passing Items */}
+        {data.passing.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1 }}>
+            {data.passing.map((item, i) => (
+              <div
+                key={i}
+                className="badge-skip"
+                style={{
+                  background: 'var(--bg-3)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  color: 'var(--text-3)',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                }}
+              >
+                ✓ {item}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

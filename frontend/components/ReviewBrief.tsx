@@ -13,120 +13,182 @@ interface ReviewBriefProps {
 }
 
 export default function ReviewBrief({ data }: ReviewBriefProps) {
-  if (!data) {
-    return null
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(['change_summary', 'focus_areas'])
+  )
+
+  if (!data) return null
+
+  const toggleSection = (key: string) => {
+    const newExpanded = new Set(expandedSections)
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key)
+    } else {
+      newExpanded.add(key)
+    }
+    setExpandedSections(newExpanded)
   }
 
-  const [openSection, setOpenSection] = useState<string>('change_summary')
-  const [copied, setCopied] = useState(false)
-
   const sections = [
-    { key: 'change_summary', title: 'Change Summary', color: 'var(--brand)' },
-    { key: 'focus_areas', title: 'Focus Areas', color: 'var(--high)' },
-    { key: 'tradeoffs_made', title: 'Tradeoffs Made', color: '#8b5cf6' },
-    { key: 'what_to_skip', title: 'What To Skip', color: 'var(--text-muted)' },
-    { key: 'open_questions', title: 'Open Questions', color: 'var(--green)' },
+    {
+      key: 'change_summary',
+      label: 'CHANGE SUMMARY',
+      content: data.change_summary,
+      accent: 'var(--brand)',
+    },
+    {
+      key: 'focus_areas',
+      label: 'FOCUS AREAS',
+      content: data.focus_areas,
+      accent: 'var(--red)',
+    },
+    {
+      key: 'tradeoffs_made',
+      label: 'TRADEOFFS MADE',
+      content: data.tradeoffs_made,
+      accent: 'var(--yellow)',
+    },
+    {
+      key: 'what_to_skip',
+      label: 'WHAT TO SKIP',
+      content: data.what_to_skip,
+      accent: 'var(--green)',
+    },
+    {
+      key: 'open_questions',
+      label: 'OPEN QUESTIONS',
+      content: data.open_questions,
+      accent: 'var(--orange)',
+    },
   ]
 
-  const copyAsMarkdown = () => {
+  const handleExport = () => {
     const markdown = sections
-      .map((section) => {
-        const content = data[section.key as keyof typeof data]
-        return `## ${section.title}\n\n${content}\n`
-      })
+      .map((section) => `## ${section.label}\n\n${section.content}\n`)
       .join('\n')
-
-    navigator.clipboard.writeText(markdown)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    
+    const blob = new Blob([markdown], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'review-brief.md'
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
     <div className="card">
-      <h3
+      {/* Header */}
+      <div
         style={{
-          fontSize: '13px',
-          fontWeight: 600,
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           marginBottom: '16px',
         }}
       >
-        Review Brief
-      </h3>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {sections.map((section) => (
-          <div key={section.key}>
-            <div
-              onClick={() =>
-                setOpenSection(openSection === section.key ? '' : section.key)
-              }
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 0',
-                cursor: 'pointer',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>
-                {section.title}
-              </span>
-              <span
-                style={{
-                  fontSize: '18px',
-                  color: 'var(--text-muted)',
-                  transform: openSection === section.key ? 'rotate(90deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                }}
-              >
-                ›
-              </span>
-            </div>
-
-            {openSection === section.key && (
-              <div
-                style={{
-                  padding: '16px 0 16px 12px',
-                  borderLeft: `3px solid ${section.color}`,
-                  marginLeft: '4px',
-                  marginBottom: '8px',
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: '14px',
-                    lineHeight: '1.7',
-                    color: 'var(--text)',
-                  }}
-                >
-                  {data[section.key as keyof typeof data]}
-                </p>
-              </div>
-            )}
-          </div>
-        ))}
+        <div className="section-label">REVIEW BRIEF</div>
+        <button
+          onClick={handleExport}
+          style={{
+            background: 'none',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            padding: '4px 10px',
+            fontSize: '12px',
+            color: 'var(--text-3)',
+            transition: 'all 150ms ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--brand)'
+            e.currentTarget.style.color = 'var(--brand)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.color = 'var(--text-3)'
+          }}
+        >
+          Export MD
+        </button>
       </div>
 
-      <button
-        onClick={copyAsMarkdown}
-        style={{
-          marginTop: '16px',
-          width: '100%',
-          height: '32px',
-          background: 'transparent',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          color: 'var(--text-muted)',
-          fontSize: '13px',
-          cursor: 'pointer',
-        }}
-      >
-        {copied ? 'Copied!' : 'Copy as Markdown'}
-      </button>
+      {/* Sections */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+        {sections.map((section) => {
+          const isExpanded = expandedSections.has(section.key)
+
+          return (
+            <div key={section.key}>
+              {/* Section Header */}
+              <button
+                onClick={() => toggleSection(section.key)}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-2)',
+                  border: 'none',
+                  borderLeft: `3px solid ${section.accent}`,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'background 150ms ease',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-2)'
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: section.accent,
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {section.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--text-3)',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 200ms ease',
+                  }}
+                >
+                  ▼
+                </div>
+              </button>
+
+              {/* Section Content */}
+              {isExpanded && (
+                <div
+                  className="slide-down"
+                  style={{
+                    background: 'var(--bg-3)',
+                    borderLeft: `3px solid ${section.accent}`,
+                    padding: '16px 14px 16px 20px',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color: 'var(--text)',
+                      lineHeight: 1.6,
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                    }}
+                  >
+                    {section.content}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
