@@ -293,8 +293,22 @@ export default function Home() {
             </div>
 
             {/* Right Column — Animated Preview */}
-            <div className="hero-preview" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div className="preview-card" style={{ width: '100%', maxWidth: '420px' }}>
+            <div className="hero-preview" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', perspective: '1200px' }}>
+              <div className="preview-card" 
+                style={{ width: '100%', maxWidth: '420px', transition: 'transform 100ms ease-out', transformStyle: 'preserve-3d' }}
+                onMouseMove={(e) => {
+                  const card = e.currentTarget;
+                  const rect = card.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -6;
+                  const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 6;
+                  card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                }}
+              >
 
                 {/* Blocked Banner */}
                 <div style={{ background: 'rgba(28,10,10,0.9)', borderBottom: '1px solid rgba(248,113,113,0.2)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -376,7 +390,18 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="features-grid">
+            <div className="features-grid"
+              onMouseMove={(e) => {
+                const cards = document.querySelectorAll('.feature-glass-card');
+                cards.forEach((card) => {
+                  const rect = card.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  (card as HTMLElement).style.setProperty('--mouse-x', `${x}px`);
+                  (card as HTMLElement).style.setProperty('--mouse-y', `${y}px`);
+                });
+              }}
+            >
               {FEATURES.map(f => (
                 <div key={f.title} className="feature-glass-card">
                   <div className="feature-icon-wrap" style={{ background: 'rgba(79,142,247,0.1)', color: 'var(--brand)' }}>
@@ -386,6 +411,55 @@ export default function Home() {
                   <div style={{ fontSize: '14px', color: 'var(--text-3)', lineHeight: 1.6 }}>{f.desc}</div>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* ── Intelligence Engine Terminal ── */}
+          <section style={{ padding: '0 32px 100px', maxWidth: '1000px', margin: '0 auto', perspective: '1500px' }}>
+            <div 
+              style={{ background: '#0d1117', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)', transition: 'transform 200ms ease-out', transformStyle: 'preserve-3d' }}
+              onMouseMove={(e) => {
+                const card = e.currentTarget;
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -4;
+                const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 4;
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+              }}
+            >
+              {/* Terminal Header */}
+              <div style={{ background: '#161b22', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-2)' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }} />
+                <div style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', fontFamily: 'var(--font-mono), monospace', paddingRight: '56px' }}>
+                  engine/analysis.json
+                </div>
+              </div>
+              {/* Terminal Body */}
+              <div style={{ padding: '24px', fontSize: '13px', fontFamily: 'var(--font-mono), monospace', color: '#c9d1d9', lineHeight: 1.6, overflowX: 'auto' }}>
+                <pre style={{ margin: 0 }}>
+                  <span style={{ color: '#ff7b72' }}>{`{`}</span><br/>
+                  {`  `}<span style={{ color: '#79c0ff' }}>"risk_profile"</span>: <span style={{ color: '#ff7b72' }}>{`{`}</span><br/>
+                  {`    `}<span style={{ color: '#79c0ff' }}>"security_score"</span>: <span style={{ color: '#79c0ff' }}>0.91</span>,<br/>
+                  {`    `}<span style={{ color: '#79c0ff' }}>"blast_radius"</span>: <span style={{ color: '#79c0ff' }}>0.84</span>,<br/>
+                  {`    `}<span style={{ color: '#79c0ff' }}>"critical_path"</span>: <span style={{ color: '#a5d6ff' }}>"auth/middleware.go"</span><br/>
+                  {`  `}<span style={{ color: '#ff7b72' }}>{`}`}</span>,<br/>
+                  {`  `}<span style={{ color: '#79c0ff' }}>"detected_smells"</span>: <span style={{ color: '#ff7b72' }}>[</span><br/>
+                  {`    `}<span style={{ color: '#ff7b72' }}>{`{`}</span><br/>
+                  {`      `}<span style={{ color: '#79c0ff' }}>"type"</span>: <span style={{ color: '#a5d6ff' }}>"Algorithm Confusion"</span>,<br/>
+                  {`      `}<span style={{ color: '#79c0ff' }}>"severity"</span>: <span style={{ color: '#a5d6ff' }}>"CRITICAL"</span>,<br/>
+                  {`      `}<span style={{ color: '#79c0ff' }}>"line_ref"</span>: <span style={{ color: '#79c0ff' }}>42</span><br/>
+                  {`    `}<span style={{ color: '#ff7b72' }}>{`}`}</span><br/>
+                  {`  `}<span style={{ color: '#ff7b72' }}>]</span>,<br/>
+                  {`  `}<span style={{ color: '#79c0ff' }}>"reviewer_match"</span>: <span style={{ color: '#a5d6ff' }}>"@sarah_k"</span><br/>
+                  <span style={{ color: '#ff7b72' }}>{`}`}</span>
+                </pre>
+              </div>
             </div>
           </section>
 
@@ -402,17 +476,17 @@ export default function Home() {
                   <tr>
                     <th>CAPABILITY</th>
                     <th>PRISM</th>
-                    <th>GITHUB NATIVE</th>
-                    <th>GENERIC AI BOTS</th>
+                    <th>CODE RABBIT</th>
+                    <th>COPILOT PRs</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
                     ['Attention Scoring (AS)', 'cmp-check', 'cmp-cross', 'cmp-cross'],
-                    ['AST Pattern Matching', 'cmp-check', 'cmp-cross', 'cmp-partial'],
+                    ['AST Pattern Matching', 'cmp-check', 'cmp-partial', 'cmp-cross'],
                     ['Dependency Blast Radius', 'cmp-check', 'cmp-cross', 'cmp-cross'],
                     ['Architectural Memory', 'cmp-check', 'cmp-cross', 'cmp-cross'],
-                    ['PR Smell Detection', 'cmp-check', 'cmp-cross', 'cmp-partial'],
+                    ['PR Smell Detection', 'cmp-check', 'cmp-partial', 'cmp-partial'],
                     ['Line-by-line Comments', 'cmp-cross', 'cmp-check', 'cmp-check'],
                   ].map((row, i) => (
                     <tr key={i}>
