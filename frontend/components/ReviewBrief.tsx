@@ -76,6 +76,11 @@ export default function ReviewBrief({ data }: ReviewBriefProps) {
     URL.revokeObjectURL(url)
   }
 
+  const isHeuristicFallback =
+    typeof data.change_summary === 'string' &&
+    (data.change_summary.toLowerCase().includes('unavailable') ||
+      data.change_summary.toLowerCase().includes('heuristic'))
+
   return (
     <div className="card">
       {/* Header */}
@@ -84,7 +89,7 @@ export default function ReviewBrief({ data }: ReviewBriefProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '16px',
+          marginBottom: isHeuristicFallback ? '10px' : '16px',
         }}
       >
         <div className="section-label">REVIEW BRIEF</div>
@@ -111,6 +116,26 @@ export default function ReviewBrief({ data }: ReviewBriefProps) {
           Export MD
         </button>
       </div>
+
+      {/* Amber banner — only when showing heuristic fallback */}
+      {isHeuristicFallback && (
+        <div
+          style={{
+            background: 'var(--yellow-bg)',
+            border: '1px solid var(--yellow)',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            marginBottom: '12px',
+            fontSize: '12px',
+            color: 'var(--yellow)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          ⚡ AI brief unavailable — showing heuristic analysis
+        </div>
+      )}
 
       {/* Sections */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>

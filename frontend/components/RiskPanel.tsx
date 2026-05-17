@@ -121,11 +121,12 @@ export default function RiskPanel({ data }: RiskPanelProps) {
                   }}
                 >
                   <div
-                    className="fill-bar"
                     style={{
                       height: '100%',
                       background: labelColor,
                       width: `${dim.data.score * 100}%`,
+                      animation: 'riskBarFill 800ms ease forwards',
+                      transformOrigin: 'left',
                     }}
                   />
                 </div>

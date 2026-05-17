@@ -43,6 +43,15 @@ export default function AttentionScoreMap({ data }: AttentionScoreMapProps) {
     SKIP: { color: 'var(--text-3)', bg: 'var(--bg-3)', border: 'var(--border)' },
   }
 
+  // Show last 2 path segments — never cut the actual filename, only the prefix
+  const formatFilename = (fullPath: string) => {
+    const parts = fullPath.split('/')
+    if (parts.length <= 2) return { prefix: '', name: fullPath }
+    const name = parts[parts.length - 1]
+    const parent = parts[parts.length - 2]
+    return { prefix: '…/', name: `${parent}/${name}` }
+  }
+
   return (
     <div className="card">
       {/* Header */}
@@ -118,11 +127,21 @@ export default function AttentionScoreMap({ data }: AttentionScoreMapProps) {
                     fontFamily: 'var(--font-mono), monospace',
                     color: 'var(--text)',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    minWidth: 0,
                   }}
                 >
-                  {file.filename}
+                  {(() => {
+                    const { prefix, name } = formatFilename(file.filename)
+                    return (
+                      <>
+                        {prefix && (
+                          <span style={{ color: 'var(--text-3)' }}>{prefix}</span>
+                        )}
+                        {name}
+                      </>
+                    )
+                  })()}
                 </div>
 
                 {/* Right: Score + Label */}
