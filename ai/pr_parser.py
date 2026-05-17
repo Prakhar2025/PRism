@@ -232,13 +232,28 @@ def compute_dependents(graph: nx.DiGraph, filename: str) -> tuple[int, int, List
 def parse_pr(pr_data: Dict[str, Any]) -> Dict[str, Any]:
     files = pr_data.get('files', [])
     
+    # Safety fallback: if no files, return minimal graph
+    if not files:
+        return {
+            'nodes': 0,
+            'edges': 0,
+            'changed_files': [],
+        }
+    
     files_data = []
     for file_info in files:
         filename = file_info.get('filename', '')
-        patch = file_info.get('patch', '')
+        patch = file_info.get('patch', '') or ''
         
         language = detect_language(filename)
-        imports = parse_file_with_treesitter(filename, patch, language)
+        
+        # Try to parse imports, but don't fail if tree-sitter throws
+        imports = []
+        try:
+            imports = parse_file_with_treesitter(filename, patch, language)
+        except Exception:
+            # Silently continue - file will have empty imports list
+            pass
         
         files_data.append({
             'filename': filename,
@@ -254,7 +269,13 @@ def parse_pr(pr_data: Dict[str, Any]) -> Dict[str, Any]:
     changed_files = []
     for file_data in files_data:
         filename = file_data['filename']
-        direct_count, transitive_count, dependent_list = compute_dependents(graph, filename)
+        
+        # Always create node, even if dependency computation fails
+        try:
+            direct_count, transitive_count, dependent_list = compute_dependents(graph, filename)
+        except Exception:
+            # If graph computation fails, use 0 for dependents
+            direct_count, transitive_count, dependent_list = 0, 0, []
         
         changed_files.append({
             'filename': filename,

@@ -15,8 +15,23 @@ def compute_churn(pr_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     commits = pr_data.get('commits', [])
     total_commits = len(commits)
     
+    files = pr_data.get('files', [])
+    result = {}
+    
+    # If no commits, return default C(f) = 0.10 for all files (not 0.0)
     if total_commits == 0:
-        return {}
+        default_churn = {
+            "churn_score": 0.10,
+            "bug_fix_ratio": 0.0,
+            "commits_90d": 0,
+            "total_commits": 0,
+            "confidence": "LOW"
+        }
+        for file_info in files:
+            filename = file_info.get('filename', '')
+            if filename:
+                result[filename] = default_churn.copy()
+        return result
     
     bug_commits = 0
     commits_90d = 0
@@ -41,6 +56,10 @@ def compute_churn(pr_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     
     churn_score = min(1.0, (commits_90d / max(1, total_commits)) * bug_fix_ratio)
     
+    # Default churn for any file not in history: 0.10 (small signal, not zero)
+    if churn_score == 0.0:
+        churn_score = 0.10
+    
     if total_commits >= 20:
         confidence = "HIGH"
     elif total_commits >= 5:
@@ -55,9 +74,6 @@ def compute_churn(pr_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         "total_commits": total_commits,
         "confidence": confidence
     }
-    
-    files = pr_data.get('files', [])
-    result = {}
     
     for file_info in files:
         filename = file_info.get('filename', '')

@@ -77,51 +77,67 @@ def get_label(score: float) -> str:
 def compute_security_risk(pr_data: Dict[str, Any]) -> Dict[str, Any]:
     files = pr_data.get('files', [])
     patterns_found = []
-    total_score = 0.0
+    security_score = 0.0
     
-    for file_info in files:
-        filename = file_info.get('filename', '').lower()
-        patch = file_info.get('patch', '')
-        
-        if not patch:
-            continue
-        
-        language = 'unknown'
-        if filename.endswith('.py'):
-            language = 'python'
-        elif filename.endswith(('.js', '.ts', '.jsx', '.tsx')):
-            language = 'javascript'
-        elif filename.endswith('.go'):
-            language = 'go'
-        
-        if any(pattern in filename for pattern in AUTH_FILE_PATTERNS):
-            patterns_found.append(f"auth_file:{filename}")
-            total_score += 0.35
-        
-        for func_pattern in AUTH_FUNCTION_PATTERNS:
-            if re.search(rf'\b{func_pattern}\b', patch, re.IGNORECASE):
-                patterns_found.append(f"auth_function:{func_pattern}")
-                total_score += 0.35
-                break
-        
-        if language in SECURITY_PATTERNS:
-            lang_patterns = SECURITY_PATTERNS[language]
-            
-            for category, patterns in lang_patterns.items():
-                for pattern in patterns:
-                    if re.search(pattern, patch, re.IGNORECASE):
-                        pattern_name = f"{language}_{category}:{pattern[:30]}"
-                        patterns_found.append(pattern_name)
-                        
-                        if category in ['auth', 'jwt']:
-                            total_score += 0.35
-                        elif category in ['sql', 'eval']:
-                            total_score += 0.25
-                        elif category in ['subprocess', 'pickle', 'exec', 'dom']:
-                            total_score += 0.15
-                        break
+    # Step 1: Build combined text from diff and all patches
+    full_text = pr_data.get("diff", "") or ""
+    for f in files:
+        patch = f.get("patch") or ""
+        full_text += "\n" + patch
+    full_text = full_text.lower()
     
-    score = min(1.0, total_score)
+    # Step 2: Scan full_text for security patterns
+    if "jwt" in full_text:
+        security_score += 0.35
+        patterns_found.append("JWT pattern detected")
+    
+    if "authentication" in full_text or "authorization" in full_text:
+        security_score += 0.20
+        patterns_found.append("Auth pattern detected")
+    
+    if "password" in full_text:
+        security_score += 0.15
+        patterns_found.append("Password handling detected")
+    
+    if "middleware" in full_text and "auth" in full_text:
+        security_score += 0.15
+        patterns_found.append("Auth middleware change")
+    
+    if "token" in full_text:
+        security_score += 0.10
+        patterns_found.append("Token handling detected")
+    
+    if "secret" in full_text:
+        security_score += 0.20
+        patterns_found.append("Secret handling detected")
+    
+    if "crypto" in full_text or "encrypt" in full_text:
+        security_score += 0.15
+        patterns_found.append("Cryptography change")
+    
+    if "sql" in full_text and ("select" in full_text or "insert" in full_text):
+        security_score += 0.20
+        patterns_found.append("SQL query detected")
+    
+    if "eval(" in full_text:
+        security_score += 0.30
+        patterns_found.append("eval() usage detected")
+    
+    if "pickle" in full_text:
+        security_score += 0.25
+        patterns_found.append("Pickle usage detected")
+    
+    security_score = min(1.0, security_score)
+    
+    # Step 4: Check filenames for high-risk indicators
+    high_risk_names = ["auth", "jwt", "token", "password", "middleware", "crypto", "security", "permission", "session"]
+    for f in files:
+        fname = f.get("filename", "").lower()
+        if any(name in fname for name in high_risk_names):
+            security_score = min(1.0, security_score + 0.20)
+            patterns_found.append(f"High-risk filename: {f.get('filename', '')}")
+    
+    score = round(security_score, 2)
     label = get_label(score)
     
     explanation = f"Found {len(patterns_found)} security-sensitive patterns across {len(files)} files."
@@ -135,7 +151,7 @@ def compute_security_risk(pr_data: Dict[str, Any]) -> Dict[str, Any]:
         explanation = "No significant security patterns detected."
     
     return {
-        "score": round(score, 2),
+        "score": score,
         "label": label,
         "patterns_found": patterns_found[:10],
         "explanation": explanation
@@ -176,7 +192,26 @@ def compute_blast_radius(pr_data: Dict[str, Any], dependency_graph: Dict[str, An
         
         max_score = max(max_score, score)
     
-    services_affected = len(domains_set)
+    # Step 3: Fallback blast radius from file count (if graph has 0 edges)
+    num_files = len(pr_data.get('files', []))
+    production_files = [
+        f for f in pr_data.get('files', [])
+        if not any(x in f.get('filename', '').lower()
+                   for x in ["test", "spec", "mock", "fixture", "docs", ".md"])
+    ]
+    blast_score = min(1.0, len(production_files) / 10.0)
+    
+    # Use the higher of graph-based score or file-count-based score
+    max_score = max(max_score, blast_score)
+    
+    # Step 4: Check filenames for high-risk indicators
+    high_risk_names = ["auth", "jwt", "token", "password", "middleware", "crypto", "security", "permission", "session"]
+    for f in pr_data.get('files', []):
+        fname = f.get('filename', '').lower()
+        if any(name in fname for name in high_risk_names):
+            max_score = min(1.0, max_score + 0.10)
+    
+    services_affected = len(domains_set) if domains_set else 1
     label = get_label(max_score)
     
     explanation = f"Changes affect {total_direct} direct dependents and {total_transitive} transitive dependents across {services_affected} domains."

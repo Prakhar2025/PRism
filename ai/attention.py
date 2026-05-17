@@ -96,6 +96,9 @@ def compute_attention(
             c_conf = "LOW"
         
         AS = 0.40 * R + 0.35 * D + 0.25 * C
+        
+        # Safety: minimum AS(f) = 0.05 for any changed file
+        AS = max(0.05, AS)
         AS = round(AS, 2)
         
         r_conf = "HIGH" if security_score > 0 else "LOW"
@@ -123,6 +126,9 @@ def compute_attention(
         if C > 0.5 and filename in churn_data:
             bug_fix_ratio = churn_data[filename]['bug_fix_ratio']
             reasons.append(f"High churn: {int(bug_fix_ratio * 100)}% bug-fix commit rate")
+        
+        if not reasons:
+            reasons.append("Changed file requires review")
         
         attention_scores.append({
             "filename": filename,
