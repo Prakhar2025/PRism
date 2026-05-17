@@ -116,6 +116,13 @@ Return ONLY valid JSON, no markdown, no explanation, no code fences:
             ]
 
             if all(key in brief for key in required_keys):
+                # Coerce all values to strings — Groq occasionally returns arrays
+                for key in required_keys:
+                    val = brief[key]
+                    if isinstance(val, list):
+                        brief[key] = '\n'.join(str(item) for item in val)
+                    elif not isinstance(val, str):
+                        brief[key] = str(val)
                 logger.info("Brief generated successfully via Groq")
                 return brief
             else:

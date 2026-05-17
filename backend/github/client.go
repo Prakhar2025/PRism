@@ -5,9 +5,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
+
+func githubHeaders(req *http.Request) {
+	req.Header.Set("User-Agent", "PRism/1.0")
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		req.Header.Set("Authorization", "token "+token)
+	}
+}
 
 type PRMetadata struct {
 	Number    int    `json:"number"`
@@ -111,6 +119,7 @@ func fetchPRMetadata(client *http.Client, owner, repo string, prNumber int) (PRM
 		return PRMetadata{}, err
 	}
 	req.Header.Set("User-Agent", "PRism/1.0")
+	githubHeaders(req)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -163,6 +172,7 @@ func fetchChangedFiles(client *http.Client, owner, repo string, prNumber int) ([
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "PRism/1.0")
+	githubHeaders(req)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -194,6 +204,7 @@ func fetchCommits(client *http.Client, owner, repo string, prNumber int) ([]Comm
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "PRism/1.0")
+	githubHeaders(req)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -246,6 +257,7 @@ func fetchDiff(client *http.Client, owner, repo string, prNumber int) (string, e
 	}
 	req.Header.Set("User-Agent", "PRism/1.0")
 	req.Header.Set("Accept", "application/vnd.github.v3.diff")
+	githubHeaders(req)
 
 	resp, err := client.Do(req)
 	if err != nil {
