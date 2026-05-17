@@ -199,6 +199,8 @@ export default function Home() {
       <>
         <div className="dot-grid" />
         <div className="hero-orb" />
+        <div className="hero-orb-2" />
+        <div className="hero-orb-3" />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
 
@@ -225,15 +227,16 @@ export default function Home() {
 
             {/* Left Column */}
             <div className="hero-left" style={{ flex: '0 0 52%', maxWidth: '52%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <div className="tag-pill">
-                <span className="tag-dot" />
-                Open Source · Free Forever · No signup
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-2)', border: '1px solid rgba(251,146,60,0.2)', borderRadius: '9999px', padding: '4px 14px 4px 6px', marginBottom: '28px', color: 'var(--text-2)', fontSize: '13px', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
+                <div style={{ background: '#f97316', color: '#fff', fontSize: '11px', fontWeight: 800, width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>P</div>
+                Built for AI-native engineering
               </div>
 
-              <h1 style={{ fontSize: '62px', fontWeight: 800, lineHeight: 1.1, color: 'var(--text)', marginBottom: '20px', letterSpacing: '-0.02em' }}>
-                PR Reviews,<br />
-                <span style={{ background: 'linear-gradient(135deg, var(--brand) 0%, #7eb3ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  finally intelligent.
+              <h1 style={{ fontSize: '64px', fontWeight: 800, lineHeight: 1.1, color: 'var(--text)', marginBottom: '20px', letterSpacing: '-0.02em' }}>
+                The intelligence platform<br />
+                for <span style={{ background: 'linear-gradient(135deg, #34d399 0%, #2dd4bf 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  code reviews.
                 </span>
               </h1>
 
@@ -350,82 +353,131 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ── Features Bento ── */}
-          <section style={{ padding: '80px 32px', maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', textTransform: 'uppercase', marginBottom: '12px' }}>What PRism does</div>
-              <h2 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Six layers of PR intelligence</h2>
+          {/* ── Ticker ── */}
+          <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', background: 'rgba(6,8,16,0.4)', padding: '16px 0' }}>
+            <div className="ticker-wrap">
+              <div className="ticker-track">
+                {Array(3).fill(['React', 'Next.js', 'Express', 'Python', 'Go', 'Django', 'FastAPI', 'Node.js', 'TypeScript', 'PostgreSQL']).flat().map((item, i) => (
+                  <div key={i} className="ticker-item">
+                    <span style={{ color: 'var(--brand)', opacity: 0.8 }}>✦</span> {item}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="bento-grid">
+          </div>
+
+          {/* ── Features ── */}
+          <section style={{ padding: '100px 32px', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+              <div style={{ display: 'inline-block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', background: 'rgba(79,142,247,0.1)', padding: '4px 12px', borderRadius: '9999px', marginBottom: '16px' }}>CORE PLATFORM</div>
+              <h2 style={{ fontSize: '42px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: '16px' }}>Built for scale.</h2>
+              <p style={{ fontSize: '16px', color: 'var(--text-2)', maxWidth: '500px', margin: '0 auto', lineHeight: 1.6 }}>
+                Every PR is parsed into an AST, mapped into a dependency graph, and analyzed across 6 dimensions of risk in under 30 seconds.
+              </p>
+            </div>
+            
+            <div className="features-grid">
               {FEATURES.map(f => (
-                <div key={f.title} className="bento-card">
-                  <span style={{ fontSize: '28px', display: 'block', marginBottom: '14px' }}>{f.icon}</span>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>{f.title}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6 }}>{f.desc}</div>
+                <div key={f.title} className="feature-glass-card">
+                  <div className="feature-icon-wrap" style={{ background: 'rgba(79,142,247,0.1)', color: 'var(--brand)' }}>
+                    {f.icon}
+                  </div>
+                  <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px', letterSpacing: '-0.01em' }}>{f.title}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-3)', lineHeight: 1.6 }}>{f.desc}</div>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* ── How it Works ── */}
-          <section style={{ padding: '80px 32px', maxWidth: '1000px', margin: '0 auto', borderTop: '1px solid var(--border)' }}>
+          {/* ── Comparison Table ── */}
+          <section style={{ padding: '100px 32px', maxWidth: '1000px', margin: '0 auto', borderTop: '1px solid var(--border)' }}>
             <div style={{ textAlign: 'center', marginBottom: '52px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', textTransform: 'uppercase', marginBottom: '12px' }}>How it works</div>
-              <h2 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Three steps to intelligent review</h2>
+              <div style={{ display: 'inline-block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', background: 'rgba(79,142,247,0.1)', padding: '4px 12px', borderRadius: '9999px', marginBottom: '16px' }}>WHY PRISM</div>
+              <h2 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>A new standard for code review</h2>
             </div>
-            <div className="steps-row">
-              {[
-                { n: '01', t: 'Paste PR URL', d: 'Any public GitHub PR. No install, no signup, no configuration.' },
-                null,
-                { n: '02', t: 'PRism analyzes', d: 'Fetches diff, parses AST, builds dependency graph, computes 4 risk dimensions in parallel.' },
-                null,
-                { n: '03', t: 'Review intelligently', d: 'Get attention scores, review brief, risk panel, PR smells, and reviewer recommendations.' },
-              ].map((step, i) =>
-                step === null ? (
-                  <div key={i} className="step-arrow">→</div>
-                ) : (
-                  <div key={step.n}>
-                    <div className="step-num">{step.n}</div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>{step.t}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6 }}>{step.d}</div>
-                  </div>
-                )
-              )}
+            
+            <div style={{ background: 'var(--bg-2)', borderRadius: '14px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+              <table className="cmp-table">
+                <thead>
+                  <tr>
+                    <th>CAPABILITY</th>
+                    <th>PRISM</th>
+                    <th>GITHUB NATIVE</th>
+                    <th>GENERIC AI BOTS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ['Attention Scoring (AS)', 'cmp-check', 'cmp-cross', 'cmp-cross'],
+                    ['AST Pattern Matching', 'cmp-check', 'cmp-cross', 'cmp-partial'],
+                    ['Dependency Blast Radius', 'cmp-check', 'cmp-cross', 'cmp-cross'],
+                    ['Architectural Memory', 'cmp-check', 'cmp-cross', 'cmp-cross'],
+                    ['PR Smell Detection', 'cmp-check', 'cmp-cross', 'cmp-partial'],
+                    ['Line-by-line Comments', 'cmp-cross', 'cmp-check', 'cmp-check'],
+                  ].map((row, i) => (
+                    <tr key={i}>
+                      <td>{row[0]}</td>
+                      <td>{row[1] === 'cmp-check' ? <span className="cmp-check">✓</span> : row[1] === 'cmp-cross' ? <span className="cmp-cross">—</span> : <span className="cmp-partial">~</span>}</td>
+                      <td>{row[2] === 'cmp-check' ? <span className="cmp-check">✓</span> : row[2] === 'cmp-cross' ? <span className="cmp-cross">—</span> : <span className="cmp-partial">~</span>}</td>
+                      <td>{row[3] === 'cmp-check' ? <span className="cmp-check">✓</span> : row[3] === 'cmp-cross' ? <span className="cmp-cross">—</span> : <span className="cmp-partial">~</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
 
-          {/* ── Social Proof ── */}
-          <section style={{ padding: '48px 32px', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', background: 'rgba(11,15,26,0.4)' }}>
-            <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
-              <div style={{ fontSize: '14px', color: 'var(--text-3)' }}>
-                Try it with any public GitHub PR — no account needed
-              </div>
-              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
-                {[
-                  { v: 'MIT', l: 'Open Source License' },
-                  { v: 'Free', l: 'No rate limits' },
-                  { v: '< 30s', l: 'Analysis time' },
-                ].map(s => (
-                  <div key={s.l} style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--brand)', fontFamily: 'var(--font-mono), monospace' }}>{s.v}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '2px' }}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
+          {/* ── How it Works ── */}
+          <section style={{ padding: '100px 32px', maxWidth: '1200px', margin: '0 auto', borderTop: '1px solid var(--border)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+              <div style={{ display: 'inline-block', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--brand)', background: 'rgba(79,142,247,0.1)', padding: '4px 12px', borderRadius: '9999px', marginBottom: '16px' }}>WORKFLOW</div>
+              <h2 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>Three steps to intelligent review</h2>
+            </div>
+            <div className="hiw-grid">
+              {[
+                { n: '01', t: 'Paste PR URL', d: 'Any public GitHub PR. No install, no signup, no configuration.' },
+                { n: '02', t: 'PRism Analyzes', d: 'Fetches diff, parses AST, builds dependency graph, computes 4 risk dimensions in parallel.' },
+                { n: '03', t: 'Review Intelligently', d: 'Get attention scores, review brief, risk panel, PR smells, and reviewer recommendations.' },
+              ].map(step => (
+                <div key={step.n} style={{ textAlign: 'center', padding: '0 24px' }}>
+                  <div className="step-num" style={{ margin: '0 auto 24px', background: 'var(--bg-2)', zIndex: 2, position: 'relative' }}>{step.n}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>{step.t}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-3)', lineHeight: 1.6 }}>{step.d}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── CTA Section ── */}
+          <section className="cta-section" style={{ padding: '100px 32px', textAlign: 'center' }}>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <h2 style={{ fontSize: '42px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: '24px' }}>
+                Stop guessing. Start knowing.
+              </h2>
+              <p style={{ fontSize: '16px', color: 'var(--text-2)', maxWidth: '500px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+                Join engineers reviewing code with mathematical precision. Open source, free forever, no signup required.
+              </p>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                style={{ height: '52px', padding: '0 32px', background: 'var(--brand)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 700, transition: 'all 150ms ease', boxShadow: '0 0 20px rgba(79,142,247,0.25)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#3d7ae8'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(79,142,247,0.4)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--brand)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(79,142,247,0.25)' }}>
+                Analyze a PR now
+              </button>
             </div>
           </section>
 
           {/* ── Footer ── */}
-          <footer style={{ padding: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PRism</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>
-              MIT License · Built for engineers who care about code quality
+          <footer style={{ padding: '40px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1400px', margin: '0 auto', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PRism</div>
+              <div style={{ height: '14px', width: '1px', background: 'var(--border)' }} />
+              <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>MIT License · Open Source Beta</div>
             </div>
             <a href="https://github.com/Prakhar2025/PRism" target="_blank" rel="noopener noreferrer"
               style={{ fontSize: '13px', color: 'var(--text-3)', transition: 'color 150ms ease' }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
-              View on GitHub →
+              View source on GitHub →
             </a>
           </footer>
 
