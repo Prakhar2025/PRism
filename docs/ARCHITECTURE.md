@@ -58,15 +58,13 @@ graph TB
         Parser --> TreeSitter[tree-sitter Library]
         Parser --> NetworkX[NetworkX Graph]
         Risk --> OSV[OSV API]
-        Risk --> BobClient[bob_client.py]
-        Formatter --> Qwen[Ollama/Qwen2.5-Coder]
+        Brief --> Groq[Groq API]
     end
     
     subgraph External Services
         GitHub[GitHub API]
-        BobAPI[IBM Bob API]
         OSVAPI[OSV Vulnerability API]
-        OllamaAPI[Ollama Local LLM]
+        GroqAPI[Groq API]
     end
     
     subgraph Data Layer
@@ -80,14 +78,13 @@ graph TB
     Router --> FastAPI
     
     GitHubClient --> GitHub
-    BobClient --> BobAPI
     OSV --> OSVAPI
-    Qwen --> OllamaAPI
+    Groq --> GroqAPI
     
     Memory --> PostgreSQL
     Orchestrator --> PostgreSQL
     
-    style BobAPI fill:#1f77b4,stroke:#333,stroke-width:3px,color:#fff
+    style GroqAPI fill:#f97316,stroke:#333,stroke-width:2px,color:#fff
     style FastAPI fill:#2ca02c,stroke:#333,stroke-width:2px
     style Router fill:#ff7f0e,stroke:#333,stroke-width:2px
     style PostgreSQL fill:#9467bd,stroke:#333,stroke-width:2px
@@ -163,7 +160,7 @@ When a user pastes a GitHub PR URL and clicks "Analyze", the following 15-step p
    - **Security Risk R(f)** — Pattern matching against security rules (SQL injection, XSS, auth bypass, crypto misuse)
    - **Blast Radius D(f)** — Graph traversal to count direct and transitive dependents
    - **Dependency Risk** — Check new/updated packages against OSV API for known CVEs
-   - **Architectural Risk** — Call IBM Bob with full repo context to analyze pattern consistency
+   - **Architectural Risk** — Heuristic analysis: cross-domain file changes, config/infra modifications, DB schema migrations, PR size, API surface changes
 
 10. **Python AI — Compute Code Churn C(f)** — `churn.py` analyzes git history:
     - Count commits touching each file in last 90 days
@@ -186,10 +183,11 @@ When a user pastes a GitHub PR URL and clicks "Analyze", the following 15-step p
     - High Churn File with No Review (C(f) > 0.7, no senior reviewer)
     - Friday Merge Risk (after 3pm Friday local time)
 
-13. **Python AI — Generate Review Brief** — `formatter.py` calls Ollama/Qwen:
-    - Prompt: "Summarize this PR in 5 sections: Change Summary, Focus Areas, Tradeoffs Made, What To Skip, Open Questions"
-    - Input: PR description + diff + attention scores + risk analysis
-    - Output: Structured markdown brief
+13. **Python AI — Generate Review Brief** — `brief.py` calls Groq (`llama-3.3-70b-versatile`):
+    - Low temperature (0.3) for consistent, precise output
+    - Input: PR title, author, risk scores, attention map, first 2000 chars of diff
+    - Output: JSON with 5 keys: `change_summary`, `focus_areas`, `tradeoffs_made`, `what_to_skip`, `open_questions`
+    - Falls back to heuristic output if `GROQ_API_KEY` is not set
 
 14. **Python AI — Store Decision Memory** — `memory.py` writes to PostgreSQL:
     ```sql
@@ -277,13 +275,12 @@ When a user pastes a GitHub PR URL and clicks "Analyze", the following 15-step p
 | **PR Smell Detection** | Seven rule-based detectors |
 | **Reviewer Matching** | Historical review analysis |
 | **Merge Readiness** | Seven-condition gate logic |
-| **Review Brief Generation** | Ollama/Qwen LLM prompting |
+| **Review Brief Generation** | Groq API (`llama-3.3-70b-versatile`) with JSON-mode output |
 | **Decision Memory** | PostgreSQL storage with semantic search |
-| **IBM Bob Integration** | Architectural risk analysis |
 
 **Key Files:**
-- `main.py` — FastAPI server with `/process`, `/search`, `/health` endpoints
-- `bob_client.py` — IBM Bob session management and prompting
+- `main.py` — FastAPI server with `/process`, `/health` endpoints
+- `brief.py` — Groq API call for structured review brief generation (llama-3.3-70b-versatile)
 - `parser.py` — tree-sitter AST parsing + NetworkX graph building
 - `risk.py` — Security, Blast Radius, Dependency, Architectural risk
 - `attention.py` — AS(f) calculation with confidence intervals
@@ -297,8 +294,7 @@ When a user pastes a GitHub PR URL and clicks "Analyze", the following 15-step p
 **Why Python?**
 - tree-sitter has excellent Python bindings
 - NetworkX is the standard graph library
-- IBM Bob SDK is Python-native
-- Ollama has Python client library
+- Groq SDK is Python-native (`pip install groq`)
 - Rich ecosystem for AST analysis and NLP
 
 ---

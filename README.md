@@ -6,7 +6,7 @@
 
 **AI-powered pull request analysis that makes code reviews self-explaining, risk-scored, and decision-remembered.**
 
-> One-line pitch: PRism makes pull requests self-explaining, risk-scored, and decision-remembered — powered by IBM Bob's full repository intelligence.
+> One-line pitch: PRism makes pull requests self-explaining, risk-scored, and decision-remembered — powered by mathematical risk scoring, AST dependency analysis, and Groq LLM-generated review briefs.
 
 **🌐 Live Demo:** [https://p-rism-zeta.vercel.app/](https://p-rism-zeta.vercel.app/)
 
@@ -84,31 +84,29 @@ Every score includes a **confidence interval** based on available data (git hist
 graph TB
     User[Developer] -->|Paste PR URL| Frontend[Next.js Frontend]
     Frontend -->|POST /analyze| GoBackend[Go Backend API]
-    
+
     GoBackend -->|Fetch PR Data| GitHub[GitHub API]
     GitHub -->|Diff + Metadata| GoBackend
-    
+
     GoBackend -->|POST /process| AIService[Python AI Service]
-    
+
     AIService -->|Parse AST| TreeSitter[tree-sitter]
     AIService -->|Build Graph| NetworkX[NetworkX]
     AIService -->|Check CVEs| OSV[OSV API]
-    AIService -->|Analyze Repo| Bob[IBM Bob]
-    AIService -->|Generate Brief| Qwen[Ollama/Qwen2.5-Coder]
-    
+    AIService -->|Generate Brief| Groq[Groq API]
+
     TreeSitter -->|Import Graph| AIService
     NetworkX -->|Blast Radius| AIService
     OSV -->|Vulnerability Data| AIService
-    Bob -->|Architectural Risk| AIService
-    Qwen -->|Review Brief| AIService
-    
+    Groq -->|Review Brief| AIService
+
     AIService -->|Store Decision| PostgreSQL[(PostgreSQL)]
     AIService -->|Complete Analysis| GoBackend
-    
+
     GoBackend -->|JSON Response| Frontend
     Frontend -->|Display| User
-    
-    style Bob fill:#1f77b4,stroke:#333,stroke-width:3px,color:#fff
+
+    style Groq fill:#f97316,stroke:#333,stroke-width:2px,color:#fff
     style AIService fill:#2ca02c,stroke:#333,stroke-width:2px
     style GoBackend fill:#ff7f0e,stroke:#333,stroke-width:2px
 ```
@@ -124,33 +122,32 @@ sequenceDiagram
     participant Go as Go Backend
     participant GitHub
     participant AI as Python AI Service
-    participant Bob as IBM Bob
+    participant Groq as Groq API
     participant DB as PostgreSQL
 
     User->>Frontend: Paste PR URL
     Frontend->>Go: POST /analyze {url}
     Go->>GitHub: Fetch PR diff + metadata
     GitHub-->>Go: Files, commits, reviews
-    
+
     Go->>AI: POST /process {diff, files, repo}
-    
+
     AI->>AI: Parse AST (tree-sitter)
     AI->>AI: Build dependency graph (NetworkX)
     AI->>AI: Compute R(f) - Security Risk
     AI->>AI: Compute D(f) - Blast Radius
     AI->>AI: Compute C(f) - Code Churn
-    
-    AI->>Bob: Analyze architectural patterns
-    Bob-->>AI: Architectural Risk + context
-    
+    AI->>AI: Compute architectural risk (heuristic)
+
     AI->>AI: Calculate AS(f) for each file
     AI->>AI: Detect PR smells
     AI->>AI: Match reviewers
-    AI->>AI: Generate Review Brief (Qwen)
-    
+    AI->>Groq: Generate Review Brief
+    Groq-->>AI: Structured JSON brief
+
     AI->>DB: Store Decision Memory
     DB-->>AI: Stored
-    
+
     AI-->>Go: Complete analysis JSON
     Go-->>Frontend: Analysis result
     Frontend-->>User: Display Brief + Scores + Risk
@@ -205,44 +202,23 @@ flowchart TD
 |-------|------------|-----|
 | **Frontend** | Next.js 14 + Tailwind + shadcn/ui + Framer Motion | SSR performance, production-quality components, smooth visualizations |
 | **Backend API** | Go (Golang) | Concurrent GitHub API calls in goroutines. Lightweight. Single binary. |
-| **AI Orchestration** | Python FastAPI | IBM Bob integration, tree-sitter AST, semantic search — Python ecosystem |
+| **AI Orchestration** | Python FastAPI | tree-sitter AST parsing, NetworkX graph analysis, Groq SDK — Python ecosystem |
 | **AST Parsing** | tree-sitter (Python bindings) | Parses any language to AST for dependency graph, security patterns |
 | **Dependency Graph** | NetworkX (Python) | Lightweight graph library for blast radius traversal and centrality |
 | **CVE Lookup** | OSV API (Google) | Free, no key required. Open Source Vulnerabilities database |
-| **Local LLM** | IBM Bob + Ollama/Qwen2.5-Coder | Bob for repo-context analysis. Qwen for Brief generation. Zero API cost. |
+| **LLM** | Groq (llama-3.3-70b-versatile) | Free tier — 1000 req/day, 6000 tokens/min. Used for structured review brief generation. |
 | **Database** | PostgreSQL | Decision Memory, PR history, team settings, velocity metrics |
 | **Deployment** | Docker + Railway | One command local setup. Free tier production deploy |
 
 ---
 
-## IBM Bob Integration
+## How PRism Was Built
 
-**What makes PRism uniquely powerful:** Most AI review tools see only the diff — the lines that changed. IBM Bob sees the entire repository.
+PRism was scaffolded and developed using **IBM Bob** — an AI coding IDE (similar to Cursor or GitHub Copilot) — during the IBM Bob Hackathon 2026. Bob assisted in writing and iterating on the codebase. The `# Made with Bob` comment at the bottom of each file in `ai/` is the attribution.
 
-**Bob powers Architectural Risk analysis:**
-- Understands which functions are called by 40 other places vs. called by nobody
-- Understands the history of a module — if auth has been unstable, Bob flags it
-- Understands architectural patterns — if the PR introduces a new pattern inconsistent with the codebase, Bob surfaces it
+**The only LLM called at runtime is Groq** (`llama-3.3-70b-versatile`), used in `brief.py` to generate the structured review brief. Everything else — risk scoring, attention scores, blast radius, churn, PR smells, reviewer matching — is pure Python math with no external AI calls.
 
-**Without full repository context, AI review is just reading the diff in isolation. Bob makes PRism's analysis genuinely intelligent, not syntactic.**
-
-Example Bob analysis:
-```
-Architectural Risk: HIGH
-
-This PR introduces a new database access pattern that bypasses 
-the established repository layer used consistently across 47 other 
-service files. This creates:
-
-1. Inconsistent data access patterns (47 files use repo layer, 
-   this PR directly queries)
-2. Potential for SQL injection (repo layer has parameterization, 
-   direct queries do not)
-3. Future maintenance burden (2 patterns to maintain instead of 1)
-
-Recommendation: Refactor to use existing UserRepository.FindByEmail() 
-instead of direct SQL query.
-```
+**Architectural risk** is computed by `compute_architectural_risk()` in `risk.py`: a heuristic that checks cross-domain file changes, config/infra modifications, database migrations, PR size, and API surface changes. Fast, auditable, zero LLM dependency.
 
 ---
 
@@ -251,7 +227,7 @@ instead of direct SQL query.
 ### Prerequisites
 - Docker and Docker Compose
 - Git
-- IBM Bob CLI (for hackathon submission)
+- A free [Groq API key](https://console.groq.com) (for AI review brief generation)
 
 ### Quick Start
 
@@ -278,9 +254,9 @@ GITHUB_TOKEN=your_github_personal_access_token
 # PostgreSQL
 DATABASE_URL=postgresql://prism:prism@postgres:5432/prism
 
-# Ollama (local LLM)
-OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=qwen2.5-coder:7b
+# Groq (LLM for review brief generation — free tier at console.groq.com)
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
 ### Development
@@ -361,7 +337,7 @@ Try it with any public GitHub PR:
 
 ## Contributing
 
-PRism is built for the IBM Bob Hackathon 2026. Contributions welcome after hackathon submission.
+PRism was built for the IBM Bob Hackathon 2026. Contributions welcome.
 
 ---
 
@@ -374,10 +350,11 @@ MIT License — see [LICENSE](LICENSE) file for details.
 ## Acknowledgments
 
 Built with:
-- **IBM Bob** — Repository intelligence platform
+- **IBM Bob** — AI coding IDE used to scaffold and develop this project
+- **Groq** — LLM API (llama-3.3-70b-versatile) for review brief generation
 - **tree-sitter** — Universal AST parsing
+- **NetworkX** — Graph library for dependency analysis
 - **OSV** — Open Source Vulnerabilities database
-- **Ollama** — Local LLM inference
 
 ---
 

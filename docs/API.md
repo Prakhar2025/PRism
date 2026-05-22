@@ -136,13 +136,11 @@ Analyze a GitHub pull request and return complete PRism intelligence.
       "architectural_risk": {
         "level": "MEDIUM",
         "score": 0.45,
-        "bob_analysis": "This PR introduces a new runtime check pattern in the hydration path. Analysis of the codebase shows 23 other runtime checks in the reconciler, but none specifically for nested Suspense boundaries. The pattern is consistent with existing error boundary checks (see ReactFiberErrorBoundary.js lines 89-112). However, this adds a new code path that executes on every hydration, which could have performance implications at scale. Recommendation: Add performance benchmark before merge to confirm <0.1ms overhead claim.",
-        "pattern_consistency": "CONSISTENT",
-        "concerns": [
-          "New code path in hot rendering loop (executes per component)",
-          "No existing test coverage for nested Suspense + SSR combination",
-          "Potential interaction with Concurrent Features (Transitions, startTransition)"
-        ]
+        "issues": [
+          "Changes span 2 domains — verify interface contracts",
+          "Public API/route changes detected — check backward compatibility"
+        ],
+        "explanation": "Moderate architectural concern: changes span multiple domains."
       }
     }
   },
@@ -353,8 +351,7 @@ Analyze a GitHub pull request and return complete PRism intelligence.
     "can_merge": false,
     "blocking_reasons": [
       "ReactDOMHostConfig.js (AS=0.91, CRITICAL) has 0 review comments from recommended reviewers",
-      "NO_TESTS_ADDED smell detected — high severity",
-      "Architectural risk flagged by IBM Bob — performance benchmark required"
+      "NO_TESTS_ADDED smell detected — high severity"
     ],
     "passing_checks": [
       "CI passing (all 847 tests green)",
@@ -391,8 +388,7 @@ Analyze a GitHub pull request and return complete PRism intelligence.
   "metadata": {
     "prism_version": "1.0.0",
     "analyzed_at": "2026-05-16T09:15:00Z",
-    "bob_session_id": "sess_abc123def456",
-    "ollama_model": "qwen2.5-coder:7b",
+    "groq_model": "llama-3.3-70b-versatile",
     "tree_sitter_languages": [
       "javascript",
       "typescript"
@@ -690,17 +686,10 @@ Health check endpoint for AI service.
   "version": "1.0.0",
   "uptime_seconds": 7234,
   "dependencies": {
-    "ollama": {
+    "groq": {
       "status": "healthy",
-      "model": "qwen2.5-coder:7b",
-      "latency_ms": 234,
-      "url": "http://localhost:11434"
-    },
-    "bob": {
-      "status": "healthy",
-      "session_active": true,
-      "session_id": "sess_abc123",
-      "latency_ms": 456
+      "model": "llama-3.3-70b-versatile",
+      "latency_ms": 234
     },
     "database": {
       "status": "healthy",
